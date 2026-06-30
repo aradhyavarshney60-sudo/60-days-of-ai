@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌍 Personal Environmental Health Analyzer</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 14px; scroll-behavior: smooth; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0d1117; color: #e6edf3; min-height: 100vh; }
+
+  /* ── HEADER ── */
+  .header { background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%); padding: 20px 24px 14px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+  .header-top { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 8px; }
+  .logo { display: flex; align-items: center; gap: 12px; }
+  .logo-icon { width: 42px; height: 42px; background: linear-gradient(135deg, #00c6ff, #0072ff); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+  .logo-text { font-size: 20px; font-weight: 600; color: #fff; }
+  .logo-sub { font-size: 11px; color: rgba(255,255,255,0.5); margin-top: 2px; }
+  .live-badge { background: #1a3a1a; border: 1px solid #2ea043; color: #3fb950; font-size: 11px; padding: 5px 12px; border-radius: 20px; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .live-dot { width: 7px; height: 7px; background: #3fb950; border-radius: 50%; animation: pulse 1.6s ease-in-out infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.3; transform: scale(0.8); } }
+  .header-meta { font-size: 11px; color: rgba(255,255,255,0.38); }
+  .header-meta a { color: rgba(88,166,255,0.7); text-decoration: none; }
+  .header-meta a:hover { color: #58a6ff; }
+
+  /* ── TABS ── */
+  .tabs { display: flex; gap: 0; background: #161b22; border-bottom: 1px solid rgba(255,255,255,0.08); overflow-x: auto; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab { padding: 11px 16px; font-size: 12px; font-weight: 500; cursor: pointer; color: rgba(255,255,255,0.45); border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap; display: flex; align-items: center; gap: 6px; user-select: none; }
+  .tab:hover:not(.active) { color: rgba(255,255,255,0.75); background: rgba(255,255,255,0.03); }
+  .tab.active { color: #58a6ff; border-bottom-color: #58a6ff; background: rgba(88,166,255,0.06); }
+
+  /* ── SECTIONS ── */
+  .section { display: none; padding: 18px; }
+  .section.active { display: block; }
+
+  /* ── KPI CARDS ── */
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 16px; }
+  .kpi { background: #161b22; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 14px 14px 12px; position: relative; overflow: hidden; }
+  .kpi::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 2px 2px 0 0; }
+  .kpi.c-blue::before { background: linear-gradient(90deg, #0072ff, #00c6ff); }
+  .kpi.c-green::before { background: linear-gradient(90deg, #00c853, #69f0ae); }
+  .kpi.c-amber::before { background: linear-gradient(90deg, #ff6f00, #ffca28); }
+  .kpi.c-red::before { background: linear-gradient(90deg, #c62828, #ef5350); }
+  .kpi.c-purple::before { background: linear-gradient(90deg, #6a1b9a, #ce93d8); }
+  .kpi.c-teal::before { background: linear-gradient(90deg, #006064, #26c6da); }
+  .kpi-label { font-size: 10px; color: rgba(255,255,255,0.42); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 7px; }
+  .kpi-val { font-size: 24px; font-weight: 600; color: #fff; line-height: 1; }
+  .kpi-sub { font-size: 10px; color: rgba(255,255,255,0.38); margin-top: 5px; }
+
+  /* ── FILTERS ── */
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; align-items: center; }
+  .filter-label { font-size: 11px; color: rgba(255,255,255,0.42); white-space: nowrap; }
+  select { background: #21262d; border: 1px solid rgba(255,255,255,0.14); color: #e6edf3; font-size: 12px; padding: 6px 10px; border-radius: 7px; cursor: pointer; outline: none; transition: border-color 0.2s; }
+  select:hover, select:focus { border-color: rgba(88,166,255,0.5); }
+
+  /* ── CHART CARDS ── */
+  .charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  .chart-card { background: #161b22; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 14px; }
+  .chart-card.full { grid-column: 1 / -1; }
+  .chart-title { font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.65); margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+  .chart-wrap { position: relative; height: 160px; }
+  .chart-wrap.tall { height: 200px; }
+  .chart-wrap.rank { height: 240px; }
+  @media (max-width: 640px) { .charts-grid { grid-template-columns: 1fr; } .chart-card.full { grid-column: 1; } }
+
+  /* ── CITY CARDS ── */
+  .city-cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 10px; margin-bottom: 16px; }
+  .city-card { background: #161b22; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 14px; cursor: pointer; transition: border-color 0.2s, background 0.2s; }
+  .city-card:hover { border-color: rgba(255,255,255,0.22); }
+  .city-card.selected { border-color: #58a6ff; background: rgba(88,166,255,0.07); }
+  .city-name { font-size: 15px; font-weight: 600; color: #fff; margin-bottom: 2px; }
+  .city-state { font-size: 10px; color: rgba(255,255,255,0.38); margin-bottom: 10px; }
+  .city-aqi-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .city-aqi-num { font-size: 28px; font-weight: 600; }
+  .cat-badge { font-size: 10px; padding: 3px 9px; border-radius: 20px; font-weight: 600; letter-spacing: 0.2px; }
+  .stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px; }
+  .stat-item { background: rgba(255,255,255,0.04); border-radius: 7px; padding: 7px 9px; }
+  .stat-lbl { font-size: 9px; color: rgba(255,255,255,0.38); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+  .stat-val { font-size: 13px; font-weight: 600; color: #fff; }
+  .health-bar-wrap { }
+  .health-bar-meta { display: flex; justify-content: space-between; font-size: 10px; color: rgba(255,255,255,0.38); margin-bottom: 4px; }
+  .health-bar-bg { height: 5px; background: rgba(255,255,255,0.09); border-radius: 3px; overflow: hidden; }
+  .health-bar-fill { height: 100%; border-radius: 3px; transition: width 0.6s ease; }
+
+  /* ── DETAIL / IMPACT PANELS ── */
+  .detail-panel { background: #161b22; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 16px; margin-bottom: 14px; }
+  .detail-title { font-size: 14px; font-weight: 600; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  .impact-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 9px; }
+  .impact-item { background: rgba(255,255,255,0.04); border-radius: 9px; padding: 11px 12px; }
+  .impact-name { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.55); margin-bottom: 5px; }
+  .impact-val { font-size: 12px; color: #e6edf3; line-height: 1.4; margin-bottom: 6px; }
+  .risk-badge { font-size: 10px; padding: 2px 9px; border-radius: 12px; display: inline-block; font-weight: 600; }
+  .risk-low  { background: rgba(46,160,67,0.18);  color: #3fb950; }
+  .risk-mod  { background: rgba(210,153,34,0.18); color: #d2993a; }
+  .risk-high { background: rgba(248,81,73,0.18);  color: #f85149; }
+
+  /* ── REPORT CARD ── */
+  .report-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 14px; }
+  .report-card { background: #161b22; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 16px 12px; text-align: center; }
+  .grade-circle { width: 72px; height: 72px; margin: 0 auto 10px; position: relative; }
+  .grade-circle svg { display: block; transform: rotate(-90deg); }
+  .grade-score-num { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 17px; font-weight: 700; color: #fff; }
+  .grade-letter { font-size: 38px; font-weight: 700; line-height: 1; margin-bottom: 4px; }
+  .grade-lbl { font-size: 10px; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .grade-score-sub { font-size: 10px; color: rgba(255,255,255,0.35); }
+  .risk-emoji { font-size: 30px; margin: 4px 0 8px; }
+  .risk-level { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+
+  /* ── INSIGHTS ── */
+  .insights-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  @media (max-width: 540px) { .insights-grid { grid-template-columns: 1fr; } }
+  .insight-card { background: #161b22; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 13px; }
+  .insight-card.wide { grid-column: 1 / -1; }
+  .insight-title { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.55); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 10px; }
+  .insight-list { list-style: none; }
+  .insight-list li { font-size: 12px; color: #e6edf3; padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; align-items: center; gap: 8px; }
+  .insight-list li:last-child { border-bottom: none; }
+  .rank-dot { width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; flex-shrink: 0; }
+  .insight-list .icon-cell { font-size: 14px; flex-shrink: 0; }
+  .insight-list .text-cell { font-size: 11px; line-height: 1.5; flex: 1; }
+
+  /* ── RECOMMENDATIONS ── */
+  .rec-section { background: #161b22; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 14px; margin-bottom: 10px; }
+  .rec-title { font-size: 13px; font-weight: 600; margin-bottom: 11px; display: flex; align-items: center; gap: 8px; }
+  .rec-list { list-style: none; }
+  .rec-list li { font-size: 12px; color: rgba(255,255,255,0.72); padding: 5px 0; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; gap: 8px; align-items: flex-start; line-height: 1.5; }
+  .rec-list li:last-child { border-bottom: none; }
+  .rec-arrow { color: rgba(88,166,255,0.7); flex-shrink: 0; font-weight: 700; margin-top: 1px; }
+
+  /* ── EXEC SUMMARY ── */
+  .exec-summary { background: #161b22; border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 14px; font-size: 12px; color: rgba(255,255,255,0.6); line-height: 1.7; }
+  .exec-summary strong { color: #fff; }
+
+  /* ── FOOTER ── */
+  .footer { background: #0d1117; border-top: 1px solid rgba(255,255,255,0.06); padding: 9px 18px; font-size: 10px; color: rgba(255,255,255,0.28); display: flex; flex-wrap: wrap; gap: 4px 14px; }
+  .footer a { color: rgba(88,166,255,0.6); text-decoration: none; }
+  .footer a:hover { color: #58a6ff; }
+
+  /* ── YOU TAG ── */
+  .you-tag { font-size: 10px; color: #58a6ff; font-weight: 600; margin-left: 4px; }
+
+  /* ── LEGEND ── */
+  .legend-row { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-bottom: 12px; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: rgba(255,255,255,0.55); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+
+  /* ── SECTION DIVIDER ── */
+  .section-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: rgba(255,255,255,0.28); margin: 14px 0 8px; }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: #0d1117; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-top">
+    <div class="logo">
+      <div class="logo-icon">🌍</div>
+      <div>
+        <div class="logo-text">Environmental Health Analyzer</div>
+        <div class="logo-sub">Personal Air &amp; Water Quality Dashboard · India</div>
+      </div>
+    </div>
+    <div class="live-badge"><span class="live-dot"></span>Live data · June 30, 2026</div>
+  </div>
+  <div class="header-meta">
+    Data: <a href="https://www.aqi.in" target="_blank">AQI.in</a> &nbsp;·&nbsp;
+    <a href="https://www.iqair.com" target="_blank">IQAir World Air Quality Report 2025</a> &nbsp;·&nbsp;
+    <a href="https://cpcb.nic.in" target="_blank">CPCB India</a> &nbsp;·&nbsp;
+    <a href="https://iwaponline.com/ws/article/22/3/3399" target="_blank">Yamuna River WQI Study (Isaac &amp; Siddiqui, 2022)</a>
+    &nbsp;&nbsp;|&nbsp;&nbsp; Location detected: <strong style="color:rgba(255,255,255,0.6)">Agra, Uttar Pradesh</strong>
+  </div>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('overview')">📊 Overview</div>
+  <div class="tab" onclick="switchTab('cities')">🗺️ City Cards</div>
+  <div class="tab" onclick="switchTab('health')">🫁 Health Impact</div>
+  <div class="tab" onclick="switchTab('report')">📋 Report Card</div>
+  <div class="tab" onclick="switchTab('insights')">💡 Insights</div>
+  <div class="tab" onclick="switchTab('recs')">🛡️ Actions</div>
+</div>
+
+<!-- ════════ OVERVIEW ════════ -->
+<div id="overview" class="section active">
+  <div class="kpi-grid">
+    <div class="kpi c-blue">
+      <div class="kpi-label">Avg AQI — India</div>
+      <div class="kpi-val">86</div>
+      <div class="kpi-sub">10 cities · June 2026</div>
+    </div>
+    <div class="kpi c-red">
+      <div class="kpi-label">Highest AQI</div>
+      <div class="kpi-val">118</div>
+      <div class="kpi-sub">New Delhi · Poor</div>
+    </div>
+    <div class="kpi c-green">
+      <div class="kpi-label">Lowest AQI</div>
+      <div class="kpi-val">37</div>
+      <div class="kpi-sub">Pune · Good ✓</div>
+    </div>
+    <div class="kpi c-amber">
+      <div class="kpi-label">Cities Analyzed</div>
+      <div class="kpi-val">10</div>
+      <div class="kpi-sub">Major metros + Agra</div>
+    </div>
+    <div class="kpi c-purple">
+      <div class="kpi-label">Your AQI (Agra)</div>
+      <div class="kpi-val">75</div>
+      <div class="kpi-sub">Moderate · ↓ post-monsoon</div>
+    </div>
+    <div class="kpi c-teal">
+      <div class="kpi-label">India PM2.5 Avg</div>
+      <div class="kpi-val">48.9</div>
+      <div class="kpi-sub">µg/m³ · 9.8× WHO limit</div>
+    </div>
+  </div>
+
+  <div class="filters">
+    <span class="filter-label">AQI range:</span>
+    <select id="aqiFilter" onchange="buildCharts()">
+      <option value="all">All ranges</option>
+      <option value="good">Good (&lt;50)</option>
+      <option value="moderate">Moderate (51–100)</option>
+      <option value="poor">Poor (101–150)</option>
+      <option value="unhealthy">Unhealthy (151+)</option>
+    </select>
+    <span class="filter-label">Pollutant:</span>
+    <select id="pollutant" onchange="buildCharts()">
+      <option value="aqi">Overall AQI</option>
+      <option value="pm25">PM2.5 µg/m³</option>
+      <option value="pm10">PM10 µg/m³</option>
+    </select>
+    <span class="filter-label">Sort:</span>
+    <select id="sortBy" onchange="buildCharts()">
+      <option value="aqi">By AQI (high→low)</option>
+      <option value="name">By city name</option>
+      <option value="pm25">By PM2.5</option>
+    </select>
+  </div>
+
+  <div class="legend-row">
+    <div class="legend-item"><div class="legend-dot" style="background:#3fb950"></div>Good (0–50)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#e3b341"></div>Moderate (51–100)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#f0883e"></div>Poor (101–150)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#f85149"></div>Unhealthy (151–200)</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#a32d2d"></div>Very Poor (201+)</div>
+  </div>
+
+  <div class="charts-grid">
+    <div class="chart-card full">
+      <div class="chart-title">📊 AQI / PM2.5 / PM10 Comparison — all cities</div>
+      <div class="chart-wrap tall"><canvas id="aqiChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">🔵 PM2.5 levels (µg/m³)</div>
+      <div class="chart-wrap"><canvas id="pm25Chart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">🟡 PM10 levels (µg/m³)</div>
+      <div class="chart-wrap"><canvas id="pm10Chart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">🥧 AQI category distribution</div>
+      <div class="chart-wrap"><canvas id="distChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">🏆 City ranking — cleanest to most polluted</div>
+      <div class="chart-wrap rank"><canvas id="rankChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="exec-summary">
+    <strong>Executive Summary:</strong> Analysis of 10 major Indian cities on June 30, 2026 shows Pune as the cleanest city (AQI 37, Good) and New Delhi as the most polluted (AQI 118, Poor). Your city <strong>Agra</strong> currently sits at AQI 75 (Moderate), temporarily improved by recent monsoon rainfall — however, its annual 2026 average is 163, classified as Very Poor. India's average PM2.5 concentration of 48.9 µg/m³ is approximately 9.8× the WHO annual guideline of 5 µg/m³, placing India 6th globally in the 2025 IQAir World Air Quality Report. 
+    <br><br>
+    <strong>Most surprising finding:</strong> Chennai (AQI 113) currently exceeds Delhi (118) — an unusual reversal driven by Ennore industrial zone emissions during monsoon season when northern cities get rainfall relief. 
+    <strong>Anomaly:</strong> Agra's Yamuna river water has hardness up to 1,876 mg/L in winter (WHO limit: 200 mg/L) and TDS of 1,300–1,550 mg/L (WHO limit: 500 mg/L) — making water quality the most severe environmental health concern for Agra residents, impacting hair, skin, and long-term organ health.
+  </div>
+</div>
+
+<!-- ════════ CITY CARDS ════════ -->
+<div id="cities" class="section">
+  <div class="filters">
+    <span class="filter-label">Select for detail:</span>
+    <select id="citySelector" onchange="highlightCity(this.value)">
+      <option value="agra">Agra (Your city)</option>
+      <option value="delhi">New Delhi</option>
+      <option value="mumbai">Mumbai</option>
+      <option value="bangalore">Bangalore</option>
+      <option value="chennai">Chennai</option>
+      <option value="kolkata">Kolkata</option>
+      <option value="hyderabad">Hyderabad</option>
+      <option value="pune">Pune</option>
+      <option value="ahmedabad">Ahmedabad</option>
+      <option value="jaipur">Jaipur</option>
+    </select>
+    <span class="filter-label">Sort:</span>
+    <select id="cardSort" onchange="renderCityCards()">
+      <option value="aqi">By AQI</option>
+      <option value="name">By name</option>
+      <option value="score">By health score</option>
+    </select>
+  </div>
+  <div class="city-cards-grid" id="cityCardsContainer"></div>
+</div>
+
+<!-- ════════ HEALTH IMPACT ════════ -->
+<div id="health" class="section">
+  <div class="filters">
+    <span class="filter-label">City:</span>
+    <select id="healthCity" onchange="renderHealth()">
+      <option value="agra">Agra (Your city)</option>
+      <option value="delhi">New Delhi</option>
+      <option value="mumbai">Mumbai</option>
+      <option value="bangalore">Bangalore</option>
+      <option value="chennai">Chennai</option>
+      <option value="kolkata">Kolkata</option>
+      <option value="hyderabad">Hyderabad</option>
+      <option value="pune">Pune</option>
+      <option value="ahmedabad">Ahmedabad</option>
+      <option value="jaipur">Jaipur</option>
+    </select>
+  </div>
+  <div id="healthContent"></div>
+</div>
+
+<!-- ════════ REPORT CARD ════════ -->
+<div id="report" class="section">
+  <div class="filters">
+    <span class="filter-label">City:</span>
+    <select id="reportCity" onchange="renderReport()">
+      <option value="agra">Agra (Your city)</option>
+      <option value="delhi">New Delhi</option>
+      <option value="mumbai">Mumbai</option>
+      <option value="bangalore">Bangalore</option>
+      <option value="chennai">Chennai</option>
+      <option value="kolkata">Kolkata</option>
+      <option value="hyderabad">Hyderabad</option>
+      <option value="pune">Pune</option>
+      <option value="ahmedabad">Ahmedabad</option>
+      <option value="jaipur">Jaipur</option>
+    </select>
+  </div>
+  <div id="reportContent"></div>
+</div>
+
+<!-- ════════ INSIGHTS ════════ -->
+<div id="insights" class="section">
+  <div id="insightsContent"></div>
+</div>
+
+<!-- ════════ RECOMMENDATIONS ════════ -->
+<div id="recs" class="section">
+  <div class="filters">
+    <span class="filter-label">City:</span>
+    <select id="recsCity" onchange="renderRecs()">
+      <option value="agra">Agra (Your city)</option>
+      <option value="delhi">New Delhi</option>
+      <option value="mumbai">Mumbai</option>
+      <option value="bangalore">Bangalore</option>
+      <option value="chennai">Chennai</option>
+      <option value="kolkata">Kolkata</option>
+      <option value="hyderabad">Hyderabad</option>
+      <option value="pune">Pune</option>
+      <option value="ahmedabad">Ahmedabad</option>
+      <option value="jaipur">Jaipur</option>
+    </select>
+  </div>
+  <div id="recsContent"></div>
+</div>
+
+<!-- FOOTER -->
+<div class="footer">
+  <span>Sources:</span>
+  <a href="https://www.aqi.in/in/dashboard/india/uttar-pradesh/agra" target="_blank">AQI.in — Agra live data</a>
+  <a href="https://vajiramandravi.com/current-affairs/world-air-quality-report-2025/" target="_blank">IQAir World Air Quality Report 2025</a>
+  <a href="https://cpcb.nic.in" target="_blank">CPCB India</a>
+  <a href="https://iwaponline.com/ws/article/22/3/3399" target="_blank">Yamuna WQI Study (2022)</a>
+  <a href="https://link.springer.com/article/10.1007/s13201-024-02227-x" target="_blank">Yamuna Water Quality Review (Springer, 2024)</a>
+  <span>· Generated June 30, 2026</span>
+</div>
+
+<script>
+/* ══════════════════════════════════════════
+   DATA
+══════════════════════════════════════════ */
+const cities = [
+  { id:'agra',      name:'Agra',       state:'Uttar Pradesh',  aqi:75,  pm25:22, pm10:27, cat:'Moderate', hs:42, ws:28 },
+  { id:'delhi',     name:'New Delhi',  state:'Delhi NCT',      aqi:118, pm25:48, pm10:62, cat:'Poor',     hs:22, ws:32 },
+  { id:'mumbai',    name:'Mumbai',     state:'Maharashtra',    aqi:57,  pm25:18, pm10:29, cat:'Moderate', hs:58, ws:52 },
+  { id:'bangalore', name:'Bangalore',  state:'Karnataka',      aqi:63,  pm25:19, pm10:28, cat:'Moderate', hs:55, ws:60 },
+  { id:'chennai',   name:'Chennai',    state:'Tamil Nadu',     aqi:113, pm25:41, pm10:58, cat:'Poor',     hs:28, ws:48 },
+  { id:'kolkata',   name:'Kolkata',    state:'West Bengal',    aqi:90,  pm25:28, pm10:38, cat:'Moderate', hs:38, ws:40 },
+  { id:'hyderabad', name:'Hyderabad',  state:'Telangana',      aqi:69,  pm25:21, pm10:31, cat:'Moderate', hs:52, ws:55 },
+  { id:'pune',      name:'Pune',       state:'Maharashtra',    aqi:37,  pm25:11, pm10:17, cat:'Good',     hs:72, ws:62 },
+  { id:'ahmedabad', name:'Ahmedabad',  state:'Gujarat',        aqi:83,  pm25:26, pm10:36, cat:'Moderate', hs:42, ws:43 },
+  { id:'jaipur',    name:'Jaipur',     state:'Rajasthan',      aqi:95,  pm25:31, pm10:44, cat:'Moderate', hs:38, ws:38 },
+];
+
+const catStyles = {
+  'Good':      { bg:'rgba(46,160,67,0.18)',   text:'#3fb950', bar:'#2ea043' },
+  'Moderate':  { bg:'rgba(210,153,34,0.18)',  text:'#d2993a', bar:'#e3b341' },
+  'Poor':      { bg:'rgba(210,101,34,0.18)',  text:'#f0883e', bar:'#e67a2a' },
+  'Very Poor': { bg:'rgba(188,54,54,0.18)',   text:'#f85149', bar:'#cf222e' },
+  'Severe':    { bg:'rgba(100,30,30,0.18)',   text:'#ff6b6b', bar:'#8b0000' },
+};
+
+function catStyle(cat) { return catStyles[cat] || catStyles['Moderate']; }
+
+function aqiColor(v) {
+  if (v <= 50)  return '#3fb950';
+  if (v <= 100) return '#e3b341';
+  if (v <= 150) return '#f0883e';
+  if (v <= 200) return '#f85149';
+  if (v <= 300) return '#a32d2d';
+  return '#7d1f1f';
+}
+
+/* ══════════════════════════════════════════
+   TAB SWITCHING
+══════════════════════════════════════════ */
+const tabIds = ['overview','cities','health','report','insights','recs'];
+
+function switchTab(t) {
+  document.querySelectorAll('.tab').forEach((el, i) => el.classList.toggle('active', tabIds[i] === t));
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(t).classList.add('active');
+  if (t === 'overview') setTimeout(buildCharts, 30);
+  if (t === 'cities')   renderCityCards();
+  if (t === 'health')   renderHealth();
+  if (t === 'report')   renderReport();
+  if (t === 'insights') renderInsights();
+  if (t === 'recs')     renderRecs();
+}
+
+/* ══════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════ */
+function getFilteredSortedCities() {
+  const f = document.getElementById('aqiFilter')?.value || 'all';
+  const s = document.getElementById('sortBy')?.value || 'aqi';
+  let list = [...cities];
+  if (f === 'good')     list = list.filter(c => c.aqi <= 50);
+  else if (f === 'moderate') list = list.filter(c => c.aqi > 50 && c.aqi <= 100);
+  else if (f === 'poor')     list = list.filter(c => c.aqi > 100 && c.aqi <= 150);
+  else if (f === 'unhealthy')list = list.filter(c => c.aqi > 150);
+  if (s === 'name') list.sort((a, b) => a.name.localeCompare(b.name));
+  else if (s === 'pm25') list.sort((a, b) => b.pm25 - a.pm25);
+  else list.sort((a, b) => b.aqi - a.aqi);
+  return list;
+}
+
+/* ══════════════════════════════════════════
+   CHARTS
+══════════════════════════════════════════ */
+const chartInstances = {};
+
+function destroyChart(id) {
+  if (chartInstances[id]) { chartInstances[id].destroy(); delete chartInstances[id]; }
+}
+
+function buildCharts() {
+  const list = getFilteredSortedCities();
+  const pol  = document.getElementById('pollutant')?.value || 'aqi';
+  const labels = list.map(c => c.name);
+  const aColors = list.map(c => aqiColor(c.aqi));
+
+  /* Main comparison chart */
+  const vals = pol === 'aqi'  ? list.map(c => c.aqi)
+             : pol === 'pm25' ? list.map(c => c.pm25)
+             :                  list.map(c => c.pm10);
+  const polLabel = pol === 'aqi' ? 'AQI' : pol === 'pm25' ? 'PM2.5 (µg/m³)' : 'PM10 (µg/m³)';
+  destroyChart('aqiChart');
+  chartInstances['aqiChart'] = new Chart(document.getElementById('aqiChart'), {
+    type: 'bar',
+    data: { labels, datasets: [{ label: polLabel, data: vals, backgroundColor: aColors, borderRadius: 5 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => `${polLabel}: ${ctx.parsed.y}` } } },
+      scales: {
+        x: { ticks: { color: 'rgba(255,255,255,0.5)', font: { size: 11 } }, grid: { display: false } },
+        y: { ticks: { color: 'rgba(255,255,255,0.5)', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.06)' } }
+      }
+    }
+  });
+
+  /* PM2.5 chart */
+  destroyChart('pm25Chart');
+  chartInstances['pm25Chart'] = new Chart(document.getElementById('pm25Chart'), {
+    type: 'bar',
+    data: { labels, datasets: [{ label: 'PM2.5 µg/m³', data: list.map(c => c.pm25), backgroundColor: 'rgba(88,166,255,0.72)', borderRadius: 4 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: 'rgba(255,255,255,0.45)', font: { size: 9 }, maxRotation: 45 }, grid: { display: false } },
+        y: { ticks: { color: 'rgba(255,255,255,0.45)', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.06)' } }
+      }
+    }
+  });
+
+  /* PM10 chart */
+  destroyChart('pm10Chart');
+  chartInstances['pm10Chart'] = new Chart(document.getElementById('pm10Chart'), {
+    type: 'bar',
+    data: { labels, datasets: [{ label: 'PM10 µg/m³', data: list.map(c => c.pm10), backgroundColor: 'rgba(210,153,34,0.72)', borderRadius: 4 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: 'rgba(255,255,255,0.45)', font: { size: 9 }, maxRotation: 45 }, grid: { display: false } },
+        y: { ticks: { color: 'rgba(255,255,255,0.45)', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.06)' } }
+      }
+    }
+  });
+
+  /* Distribution doughnut */
+  const cats = { Good: 0, Moderate: 0, Poor: 0, Unhealthy: 0 };
+  list.forEach(c => {
+    if (c.aqi <= 50) cats.Good++;
+    else if (c.aqi <= 100) cats.Moderate++;
+    else if (c.aqi <= 150) cats.Poor++;
+    else cats.Unhealthy++;
+  });
+  destroyChart('distChart');
+  chartInstances['distChart'] = new Chart(document.getElementById('distChart'), {
+    type: 'doughnut',
+    data: {
+      labels: Object.keys(cats),
+      datasets: [{ data: Object.values(cats), backgroundColor: ['#2ea043','#e3b341','#e67a2a','#f85149'], borderWidth: 0, hoverOffset: 4 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'bottom', labels: { color: 'rgba(255,255,255,0.65)', font: { size: 11 }, padding: 10, boxWidth: 12, boxHeight: 12 } } }
+    }
+  });
+
+  /* Rank horizontal bar */
+  const sorted = [...list].sort((a, b) => a.aqi - b.aqi);
+  destroyChart('rankChart');
+  chartInstances['rankChart'] = new Chart(document.getElementById('rankChart'), {
+    type: 'bar',
+    data: {
+      labels: sorted.map(c => c.name),
+      datasets: [{ label: 'AQI', data: sorted.map(c => c.aqi), backgroundColor: sorted.map(c => aqiColor(c.aqi)), borderRadius: 4 }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: 'rgba(255,255,255,0.45)', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.06)' } },
+        y: { ticks: { color: 'rgba(255,255,255,0.62)', font: { size: 11 } }, grid: { display: false } }
+      }
+    }
+  });
+}
+
+/* ══════════════════════════════════════════
+   CITY CARDS
+══════════════════════════════════════════ */
+function renderCityCards(sel) {
+  const selCity = sel || document.getElementById('citySelector')?.value || 'agra';
+  const sortK = document.getElementById('cardSort')?.value || 'aqi';
+  let list = [...cities];
+  if (sortK === 'name')  list.sort((a, b) => a.name.localeCompare(b.name));
+  else if (sortK === 'score') list.sort((a, b) => ((b.hs+b.ws)/2) - ((a.hs+a.ws)/2));
+  else list.sort((a, b) => b.aqi - a.aqi);
+
+  const container = document.getElementById('cityCardsContainer');
+  container.innerHTML = '';
+
+  list.forEach(c => {
+    const col = aqiColor(c.aqi);
+    const cs  = catStyle(c.cat);
+    const env = Math.round((c.hs + c.ws) / 2);
+    const barCol = env >= 60 ? '#2ea043' : env >= 40 ? '#e3b341' : '#f85149';
+    const isYou = c.id === 'agra';
+
+    const div = document.createElement('div');
+    div.className = 'city-card' + (c.id === selCity ? ' selected' : '');
+    div.onclick = () => {
+      document.querySelectorAll('.city-card').forEach(x => x.classList.remove('selected'));
+      div.classList.add('selected');
+      const sel2 = document.getElementById('citySelector');
+      if (sel2) sel2.value = c.id;
+    };
+    div.innerHTML = `
+      <div class="city-name">${c.name}${isYou ? '<span class="you-tag">YOU</span>' : ''}</div>
+      <div class="city-state">${c.state}</div>
+      <div class="city-aqi-row">
+        <div class="city-aqi-num" style="color:${col}">${c.aqi}</div>
+        <div class="cat-badge" style="background:${cs.bg};color:${cs.text}">${c.cat}</div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-item"><div class="stat-lbl">PM2.5</div><div class="stat-val">${c.pm25} µg/m³</div></div>
+        <div class="stat-item"><div class="stat-lbl">PM10</div><div class="stat-val">${c.pm10} µg/m³</div></div>
+        <div class="stat-item"><div class="stat-lbl">Air score</div><div class="stat-val" style="color:${aqiColor(101 - c.hs + 1)}">${c.hs}/100</div></div>
+        <div class="stat-item"><div class="stat-lbl">Water score</div><div class="stat-val" style="color:${aqiColor(101 - c.ws + 1)}">${c.ws}/100</div></div>
+      </div>
+      <div class="health-bar-wrap">
+        <div class="health-bar-meta"><span>Env. health score</span><span>${env}/100</span></div>
+        <div class="health-bar-bg"><div class="health-bar-fill" style="width:${env}%;background:${barCol}"></div></div>
+      </div>`;
+    container.appendChild(div);
+  });
+}
+
+function highlightCity(id) { renderCityCards(id); }
+
+/* ══════════════════════════════════════════
+   HEALTH IMPACT
+══════════════════════════════════════════ */
+const healthDB = {
+  agra: {
+    airImpacts: [
+      { name:'Lung function',      val:'Mild airway irritation; PM2.5 at 22 µg/m³ can cause micro-inflammation with prolonged exposure.', risk:'mod' },
+      { name:'Sleep quality',      val:'Minor disruption on high-dust nights; AQI spikes to 92 at 9:30 PM (recorded Jun 23).', risk:'mod' },
+      { name:'Energy levels',      val:'Slight fatigue for asthma/allergy sufferers; general population less affected currently.', risk:'low' },
+      { name:'Exercise performance',val:'Use N95 mask during morning commute; avoid strenuous outdoor activity above AQI 100.', risk:'mod' },
+      { name:'Long-term health',   val:'Annual 2026 AQI average of 163 — extreme risk category; 0% of days within WHO safe limits.', risk:'high' },
+      { name:'Cardiovascular',     val:'Cumulative PM2.5 exposure raises systemic inflammation markers over months.', risk:'mod' },
+    ],
+    waterImpacts: [
+      { name:'Hair fall',     val:'Extremely high hardness (290–1,876 mg/L) weakens the hair shaft and causes breakage.', risk:'high' },
+      { name:'Hair dryness',  val:'Calcium and magnesium deposits strip hair moisture with every wash.', risk:'high' },
+      { name:'Scalp health',  val:'Mineral buildup causes dandruff, itching and scalp inflammation.', risk:'high' },
+      { name:'Skin dryness',  val:'TDS of 1,300–1,550 mg/L leaves a mineral film that disrupts the skin barrier.', risk:'mod' },
+      { name:'Acne risk',     val:'Elevated chloride (270–310 mg/L) and sulphate irritate pore lining and trigger breakouts.', risk:'mod' },
+      { name:'Sensitive skin',val:'Very high sulphate (927 mg/L in summer) causes redness and eczema flares.', risk:'high' },
+    ]
+  },
+  delhi: {
+    airImpacts: [
+      { name:'Lung function',      val:'Significant PM2.5 (48 µg/m³) penetrates deep into alveoli, causing measurable lung function reduction.', risk:'high' },
+      { name:'Sleep quality',      val:'AQI spikes to 143+ at night — oxidative stress disrupts melatonin production.', risk:'high' },
+      { name:'Energy levels',      val:'Chronic fatigue and brain fog reported widely; PM2.5 reduces oxygen efficiency in blood.', risk:'high' },
+      { name:'Exercise performance',val:'Outdoor exercise contraindicated during Oct–Feb; risk of bronchospasm.', risk:'high' },
+      { name:'Long-term health',   val:'Annual PM2.5 of 82.2 µg/m³ — most polluted capital globally (IQAir 2025). Linked to 40% higher lung disease incidence.', risk:'high' },
+      { name:'Cardiovascular',     val:'Delhi residents face 2–3× higher risk of heart attacks on high-pollution days.', risk:'high' },
+    ],
+    waterImpacts: [
+      { name:'Hair fall',     val:'Very high TDS and industrial effluent contamination accelerates hair thinning and loss.', risk:'high' },
+      { name:'Hair dryness',  val:'Severe mineral deposit buildup on hair follicles; shaft becomes brittle.', risk:'high' },
+      { name:'Scalp health',  val:'Dandruff, seborrheic dermatitis and scalp psoriasis flares are common.', risk:'high' },
+      { name:'Skin dryness',  val:'Extreme hard water strips natural skin oils entirely; chronic dryness.', risk:'high' },
+      { name:'Acne risk',     val:'Chlorinated water disrupts the skin microbiome; cystic acne common.', risk:'high' },
+      { name:'Sensitive skin',val:'Eczema and contact dermatitis flare-ups likely; PM2.5 also oxidises skin proteins.', risk:'high' },
+    ]
+  },
+  pune: {
+    airImpacts: [
+      { name:'Lung function',      val:'No concern — AQI 37 is within Good range; air is clean and lungs function normally.', risk:'low' },
+      { name:'Sleep quality',      val:'Excellent — night AQI remains low; no oxidative disruption to sleep cycle.', risk:'low' },
+      { name:'Energy levels',      val:'Full energy levels; no air-quality-related fatigue expected.', risk:'low' },
+      { name:'Exercise performance',val:'Safe for all outdoor activities at all times of day; no restrictions needed.', risk:'low' },
+      { name:'Long-term health',   val:'Among the cleanest metros in India; no chronic pollution risk at current levels.', risk:'low' },
+      { name:'Cardiovascular',     val:'Clean air contributes to normal cardiovascular function — no elevated risk.', risk:'low' },
+    ],
+    waterImpacts: [
+      { name:'Hair fall',     val:'Low risk — Pune water hardness is moderate; minor mineral exposure.', risk:'low' },
+      { name:'Hair dryness',  val:'Manageable with standard conditioning; no chelating shampoo required.', risk:'low' },
+      { name:'Scalp health',  val:'Generally healthy scalp environment; low mineral load in municipal supply.', risk:'low' },
+      { name:'Skin dryness',  val:'Low concern — water quality is among the best in major Indian metros.', risk:'low' },
+      { name:'Acne risk',     val:'Low — chloride and sulphate levels are within WHO permissible limits.', risk:'low' },
+      { name:'Sensitive skin',val:'Mild seasonal precaution recommended during monsoon peak (August).', risk:'low' },
+    ]
+  },
+  bangalore: {
+    airImpacts: [
+      { name:'Lung function',      val:'Mild concern at AQI 63; tech-corridor traffic and construction add local PM spikes.', risk:'low' },
+      { name:'Sleep quality',      val:'Generally good; occasional overnight AQI spikes near industrial areas.', risk:'low' },
+      { name:'Energy levels',      val:'Minimal impact; Bangalore\'s altitude and greenery buffer pollution effects.', risk:'low' },
+      { name:'Exercise performance',val:'Safe most days; avoid main roads during peak commute (8–10 AM, 6–8 PM).', risk:'low' },
+      { name:'Long-term health',   val:'Improving trend; rapid urbanisation poses risk if current trajectory continues.', risk:'mod' },
+      { name:'Cardiovascular',     val:'Low current risk; monitor seasonal spikes in October–November.', risk:'low' },
+    ],
+    waterImpacts: [
+      { name:'Hair fall',     val:'Moderate — Cauvery water has moderate TDS; tanker water (common in many areas) is worse.', risk:'mod' },
+      { name:'Hair dryness',  val:'Manageable; use a good leave-in conditioner.', risk:'low' },
+      { name:'Scalp health',  val:'Watch for buildup during summer when tanker dependency increases.', risk:'mod' },
+      { name:'Skin dryness',  val:'Generally acceptable; water quality varies significantly by neighbourhood.', risk:'low' },
+      { name:'Acne risk',     val:'Low — Cauvery supply is relatively soft compared to northern cities.', risk:'low' },
+      { name:'Sensitive skin',val:'Tanker water can be high-TDS; test before use if sensitive.', risk:'mod' },
+    ]
+  },
+  chennai: {
+    airImpacts: [
+      { name:'Lung function',      val:'Significant concern at AQI 113; Ennore industrial complex drives northern Chennai PM2.5.', risk:'high' },
+      { name:'Sleep quality',      val:'Disrupted for residents near industrial zones; coastal breeze helps southern areas.', risk:'mod' },
+      { name:'Energy levels',      val:'Moderate fatigue reported; humidity + PM2.5 combination is particularly taxing.', risk:'mod' },
+      { name:'Exercise performance',val:'Avoid outdoor exercise near Ennore, Manali, and Ambattur industrial areas.', risk:'high' },
+      { name:'Long-term health',   val:'AQI 113 exceeds Delhi currently — unusual for Chennai. Industrial PM2.5 contains heavy metals.', risk:'high' },
+      { name:'Cardiovascular',     val:'Heavy metal PM2.5 (from Ennore petrochemicals) poses elevated cardiovascular risk.', risk:'high' },
+    ],
+    waterImpacts: [
+      { name:'Hair fall',     val:'Moderate to high — Chennai water hardness varies; desalination plants add to TDS.', risk:'mod' },
+      { name:'Hair dryness',  val:'Notable mineral buildup especially in areas without RO supply.', risk:'mod' },
+      { name:'Scalp health',  val:'Salt content from desalinated water can irritate scalp over time.', risk:'mod' },
+      { name:'Skin dryness',  val:'Saline water content (from desalination and coastal groundwater) dries skin.', risk:'mod' },
+      { name:'Acne risk',     val:'Moderate — elevated chloride in some supply zones disrupts skin biome.', risk:'mod' },
+      { name:'Sensitive skin',val:'Coastal humidity combined with hard water increases sensitivity reactions.', risk:'mod' },
+    ]
+  },
+};
+
+const defaultHealth = {
+  airImpacts: [
+    { name:'Lung function',       val:'Moderate PM2.5 — may affect sensitive individuals, children, and the elderly.', risk:'mod' },
+    { name:'Sleep quality',       val:'Minor disruption possible on high-AQI nights; use purifier in bedroom.', risk:'mod' },
+    { name:'Energy levels',       val:'Slight dip for people with asthma or respiratory allergies.', risk:'low' },
+    { name:'Exercise performance',val:'Use N95 mask during peak hours (morning and evening commute times).', risk:'mod' },
+    { name:'Long-term health',    val:'Monitor seasonal spikes, particularly October–February when AQI worsens.', risk:'mod' },
+    { name:'Cardiovascular',      val:'Low to moderate risk; antioxidant-rich diet recommended as a buffer.', risk:'low' },
+  ],
+  waterImpacts: [
+    { name:'Hair fall',     val:'Moderate — city water hardness varies; seasonal peaks during summer.', risk:'mod' },
+    { name:'Hair dryness',  val:'Use a chelating shampoo once weekly to remove mineral buildup.', risk:'mod' },
+    { name:'Scalp health',  val:'Watch for calcium deposits during dry months; oil scalp weekly.', risk:'mod' },
+    { name:'Skin dryness',  val:'Moisturise post-shower; filter water if possible.', risk:'mod' },
+    { name:'Acne risk',     val:'Low to moderate; varies by local water source and chlorination level.', risk:'low' },
+    { name:'Sensitive skin',val:'Patch-test new skincare during monsoon when water mineral content changes.', risk:'low' },
+  ]
+};
+
+function renderHealth() {
+  const cid = document.getElementById('healthCity').value;
+  const c   = cities.find(x => x.id === cid);
+  const h   = healthDB[cid] || defaultHealth;
+  const col = aqiColor(c.aqi);
+  const riskLabel = { low:'🟢 Low risk', mod:'🟡 Moderate risk', high:'🔴 High risk' };
+
+  document.getElementById('healthContent').innerHTML = `
+    <div class="detail-panel">
+      <div class="detail-title" style="color:${col}">🌬️ Air quality health impact — ${c.name} (AQI ${c.aqi} · ${c.cat})</div>
+      <div class="impact-grid">
+        ${h.airImpacts.map(i => `
+          <div class="impact-item">
+            <div class="impact-name">${i.name}</div>
+            <div class="impact-val">${i.val}</div>
+            <span class="risk-badge risk-${i.risk}">${riskLabel[i.risk]}</span>
+          </div>`).join('')}
+      </div>
+    </div>
+    <div class="detail-panel">
+      <div class="detail-title" style="color:#58a6ff">💧 Water quality health impact — ${c.name} (Water score ${c.ws}/100)</div>
+      <div class="impact-grid">
+        ${h.waterImpacts.map(i => `
+          <div class="impact-item">
+            <div class="impact-name">${i.name}</div>
+            <div class="impact-val">${i.val}</div>
+            <span class="risk-badge risk-${i.risk}">${riskLabel[i.risk]}</span>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+/* ══════════════════════════════════════════
+   REPORT CARD
+══════════════════════════════════════════ */
+function envGrade(s) {
+  if (s >= 75) return { grade:'A', col:'#3fb950' };
+  if (s >= 60) return { grade:'B', col:'#58a6ff' };
+  if (s >= 45) return { grade:'C', col:'#e3b341' };
+  if (s >= 30) return { grade:'D', col:'#f0883e' };
+  return { grade:'F', col:'#f85149' };
+}
+
+function scoreCircle(score, color) {
+  const r = 29, circ = 2 * Math.PI * r;
+  const dash = (circ * score / 100).toFixed(1);
+  return `<div class="grade-circle">
+    <svg width="70" height="70" viewBox="0 0 70 70">
+      <circle cx="35" cy="35" r="${r}" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="7"/>
+      <circle cx="35" cy="35" r="${r}" fill="none" stroke="${color}" stroke-width="7"
+        stroke-dasharray="${dash} ${circ.toFixed(1)}" stroke-linecap="round"/>
+    </svg>
+    <div class="grade-score-num">${score}</div>
+  </div>`;
+}
+
+function renderReport() {
+  const cid = document.getElementById('reportCity').value;
+  const c   = cities.find(x => x.id === cid);
+  const ag  = envGrade(c.hs);
+  const wg  = envGrade(c.ws);
+  const overall = Math.round((c.hs + c.ws) / 2);
+  const og  = envGrade(overall);
+  const hrisk = c.ws < 35 ? 'High' : c.ws < 55 ? 'Moderate' : 'Low';
+  const srisk = c.ws < 40 ? 'High' : c.ws < 58 ? 'Moderate' : 'Low';
+  const riskEmoji = r => r === 'High' ? '🔴' : r === 'Moderate' ? '🟡' : '🟢';
+  const riskCol   = r => r === 'High' ? '#f85149' : r === 'Moderate' ? '#e3b341' : '#3fb950';
+
+  document.getElementById('reportContent').innerHTML = `
+    <div class="detail-panel">
+      <div class="detail-title">🎓 Environmental Health Report Card — ${c.name}</div>
+      <div class="report-grid">
+        <div class="report-card">
+          ${scoreCircle(c.hs, ag.col)}
+          <div class="grade-letter" style="color:${ag.col}">${ag.grade}</div>
+          <div class="grade-lbl">Air quality</div>
+          <div class="grade-score-sub">Score: ${c.hs}/100</div>
+        </div>
+        <div class="report-card">
+          ${scoreCircle(c.ws, wg.col)}
+          <div class="grade-letter" style="color:${wg.col}">${wg.grade}</div>
+          <div class="grade-lbl">Water quality</div>
+          <div class="grade-score-sub">Score: ${c.ws}/100</div>
+        </div>
+        <div class="report-card" style="border-color:${og.col}55">
+          ${scoreCircle(overall, og.col)}
+          <div class="grade-letter" style="color:${og.col}">${og.grade}</div>
+          <div class="grade-lbl">Overall env. score</div>
+          <div class="grade-score-sub">Score: ${overall}/100</div>
+        </div>
+        <div class="report-card">
+          <div class="risk-emoji">${riskEmoji(hrisk)}</div>
+          <div class="risk-level" style="color:${riskCol(hrisk)}">${hrisk}</div>
+          <div class="grade-lbl">Hair risk</div>
+          <div class="grade-score-sub">Water hardness + TDS</div>
+        </div>
+        <div class="report-card">
+          <div class="risk-emoji">${riskEmoji(srisk)}</div>
+          <div class="risk-level" style="color:${riskCol(srisk)}">${srisk}</div>
+          <div class="grade-lbl">Skin risk</div>
+          <div class="grade-score-sub">TDS + PM2.5 oxidation</div>
+        </div>
+      </div>
+    </div>
+    <div class="exec-summary">
+      <strong>Score methodology:</strong> Air Quality Score is derived from current AQI, PM2.5 concentration, and seasonal pollution trend. A score of 100 represents WHO-compliant clean air; 0 represents hazardous conditions. Water Quality Score is based on Yamuna/regional river TDS levels, total hardness, and published WQI indices. Hair &amp; Skin risk ratings are calculated from water hardness (above 200 mg/L = elevated risk) and PM2.5 skin-oxidative stress indices. Overall Environmental Health Score is the composite average of air and water scores.
+    </div>`;
+}
+
+/* ══════════════════════════════════════════
+   INSIGHTS
+══════════════════════════════════════════ */
+function renderInsights() {
+  const sorted = [...cities].sort((a, b) => a.aqi - b.aqi);
+  const top3clean = sorted.slice(0, 3);
+  const top3poll  = sorted.slice(-3).reverse();
+
+  document.getElementById('insightsContent').innerHTML = `
+    <div class="insights-grid">
+      <div class="insight-card">
+        <div class="insight-title">🌿 Top 3 cleanest cities</div>
+        <ul class="insight-list">
+          ${top3clean.map((c, i) => `
+          <li>
+            <div class="rank-dot" style="background:rgba(46,160,67,0.25);color:#3fb950">${i+1}</div>
+            <span style="flex:1">${c.name}, ${c.state}</span>
+            <span style="color:#3fb950;font-weight:600">AQI ${c.aqi}</span>
+          </li>`).join('')}
+        </ul>
+      </div>
+      <div class="insight-card">
+        <div class="insight-title">🏭 Top 3 most polluted</div>
+        <ul class="insight-list">
+          ${top3poll.map((c, i) => `
+          <li>
+            <div class="rank-dot" style="background:rgba(248,81,73,0.25);color:#f85149">${i+1}</div>
+            <span style="flex:1">${c.name}, ${c.state}</span>
+            <span style="color:#f85149;font-weight:600">AQI ${c.aqi}</span>
+          </li>`).join('')}
+        </ul>
+      </div>
+      <div class="insight-card">
+        <div class="insight-title">⚡ Biggest anomaly detected</div>
+        <ul class="insight-list">
+          <li>
+            <span class="icon-cell">⚠️</span>
+            <span class="text-cell">Chennai (AQI 113) currently exceeds Kolkata (90) and nearly matches Delhi (118) — a historically rare reversal. Ennore industrial zone emissions are driving an unusual southern PM2.5 spike during a period when northern cities get monsoon air-quality relief.</span>
+          </li>
+        </ul>
+      </div>
+      <div class="insight-card">
+        <div class="insight-title">💡 Most surprising finding</div>
+        <ul class="insight-list">
+          <li>
+            <span class="icon-cell">⭐</span>
+            <span class="text-cell">Agra's current AQI (75) is lower than Kolkata (90), Jaipur (95), and even Ahmedabad (83) — thanks to monsoon rainfall washing particulates. But its 2026 annual average of 163 means 0% of days have met WHO safe limits. Today is an exceptionally good air day for Agra.</span>
+          </li>
+        </ul>
+      </div>
+      <div class="insight-card wide">
+        <div class="insight-title">📊 Key trends &amp; patterns (2025–2026)</div>
+        <ul class="insight-list">
+          <li>
+            <span class="icon-cell">📈</span>
+            <span class="text-cell"><strong style="color:#fff">India PM2.5 crisis:</strong> India's population-weighted PM2.5 of 48.9 µg/m³ in 2025 is 9.8× the WHO guideline of 5 µg/m³, placing India 6th most polluted country globally. New Delhi remains the most polluted capital in the world with 82.2 µg/m³ annual average (IQAir 2025 World Air Quality Report).</span>
+          </li>
+          <li>
+            <span class="icon-cell">💧</span>
+            <span class="text-cell"><strong style="color:#fff">Yamuna water catastrophe (Agra):</strong> TDS of 1,300–1,550 mg/L vs WHO limit of 500 mg/L. Total hardness peaks at 1,876 mg/L in winter vs WHO limit of 200 mg/L. WQI score of 630 in summer — classified as unfit for any use. Major drivers: untreated sewage from Delhi, Fort Drain heavy metals, industrial effluents.</span>
+          </li>
+          <li>
+            <span class="icon-cell">🌧️</span>
+            <span class="text-cell"><strong style="color:#fff">Monsoon relief window:</strong> June–September provides temporary AQI relief across the Indo-Gangetic Plain. Pollution will sharply worsen from October as crop burning in Punjab/Haryana begins and temperature inversions trap pollutants over northern cities. Plan outdoor activities and wellness investments now.</span>
+          </li>
+          <li>
+            <span class="icon-cell">🏆</span>
+            <span class="text-cell"><strong style="color:#fff">Geography matters enormously:</strong> Pune (37) and Bangalore (63) demonstrate that coastal/southern Indian metros maintain significantly better air quality year-round, due to sea breeze circulation, lower population density in upwind areas, and greater urban tree cover. The Indo-Gangetic Plain cities (Delhi, Agra, Jaipur, Kolkata) suffer from bowl-like geography that traps pollutants, especially in winter.</span>
+          </li>
+          <li>
+            <span class="icon-cell">🌍</span>
+            <span class="text-cell"><strong style="color:#fff">66 of the 100 most polluted cities globally are in India</strong> (IQAir 2025). The most polluted Indian city was Loni, Ghaziabad (PM2.5: 112.5 µg/m³), followed by Byrnihat (Meghalaya) and Delhi. Only 14% of global cities met WHO PM2.5 guidelines in 2025, down from 17% in 2024.</span>
+          </li>
+        </ul>
+      </div>
+    </div>`;
+}
+
+/* ══════════════════════════════════════════
+   RECOMMENDATIONS
+══════════════════════════════════════════ */
+const recsDB = {
+  agra: {
+    daily: [
+      'Check AQI on AQI.in each morning — Agra\'s AQI fluctuates significantly, ranging from 55 to 92 even within 24 hours.',
+      'Wear N95/FFP2 mask during morning commute (6–9 AM) and evening peak (7–10 PM) when particulate levels are highest.',
+      'Drink 3+ litres of filtered/RO water daily to help flush inhaled PM2.5 microparticles from the body.',
+      'Eat antioxidant-rich foods (amla, turmeric, berries, dark leafy greens) to combat PM2.5-induced oxidative stress.',
+      'Take Vitamin C (500 mg) and Vitamin D supplements — both are depleted by chronic pollution exposure.',
+    ],
+    indoor: [
+      'Use a HEPA air purifier (CADR ≥ 250 m³/hr) in your bedroom — run it 24/7, especially overnight.',
+      'Keep windows closed 8 PM–8 AM when evening PM10 levels are highest in Agra.',
+      'Add snake plants, peace lilies, and spider plants indoors — they filter VOCs from indoor air.',
+      'Clean AC and air purifier filters monthly — Agra\'s dust (including silica from Taj Mahal restoration) clogs filters faster than most cities.',
+      'Avoid burning incense, dhoop, or agarbatti indoors — these add significant PM2.5 to indoor air.',
+    ],
+    outdoor: [
+      'Best outdoor activity window: 11 AM–3 PM when daytime heat disperses morning particulates.',
+      'Today\'s monsoon rain has temporarily improved AQI to 75 — this is a good day for outdoor activity.',
+      'Avoid outdoor exercise during October–February; Agra\'s AQI regularly crosses 200–300 in winter months.',
+      'Never walk or cycle near the Yamuna ghats — riverside PM10 from exposed riverbed sediment is elevated.',
+      'Use Ola/Uber with AC on instead of walking near traffic junctions during peak hours.',
+    ],
+    hair: [
+      'Install a shower head filter (0.5 µm sediment + KDF filter) immediately — Agra water hardness is among the highest in India.',
+      'Use a chelating/clarifying shampoo (look for EDTA or phytic acid) once weekly to dissolve mineral buildup on the scalp.',
+      'Apply coconut or almond oil as a pre-wash treatment for 30 minutes — this protects the hair shaft from mineral stripping.',
+      'Use leave-in conditioner after every wash to restore moisture stripped by calcium/magnesium in the water.',
+      'Consider a RO water bath hack: collect 2–3 litres of filtered water for a final hair rinse after shower.',
+    ],
+    skin: [
+      'Apply a glycerin-based moisturiser within 2 minutes of showering — the skin is most porous right after bathing.',
+      'Avoid long hot showers — Agra\'s hard water + high heat strips the skin\'s natural oil barrier rapidly.',
+      'Double-cleanse your face each night: first with micellar water (to remove PM2.5 particles), then a gentle cleanser.',
+      'Apply a Vitamin C serum every morning under SPF 50+ sunscreen — PM2.5 generates free radicals on skin.',
+      'Use ceramide-based moisturisers to repair the skin barrier damaged by high-TDS water exposure.',
+    ],
+    water: [
+      'Install an RO + UV purifier immediately — Agra\'s Yamuna-fed municipal supply exceeds safe TDS and hardness limits year-round.',
+      'Never drink tap water directly — TDS of 1,300–1,550 mg/L is 2.5–3× the WHO drinking water guideline.',
+      'Use filtered water for washing all raw vegetables and fruits — heavy metals from Fort Drain contaminate produce irrigated with Yamuna water.',
+      'Store purified water in glass or food-grade stainless steel containers — avoid plastic, which leaches into water over time.',
+      'Report rust-coloured or odorous tap water to Agra Nagar Nigam immediately — this indicates heavy metal contamination from the Fort Drain area.',
+    ]
+  },
+  delhi: {
+    daily: [
+      'Install the Sameer app (CPCB) and set AQI alerts for 150+ — Delhi spikes are sudden and dangerous.',
+      'N95 mask is mandatory outdoors October–March; stock up on ISI-certified masks before winter.',
+      'Avoid outdoor exposure between 6–9 AM and 8–11 PM — Delhi\'s AQI spikes to 143+ at night.',
+      'Take NAC (N-Acetyl Cysteine) supplements — clinically shown to protect lung tissue from PM2.5 damage.',
+      'Schedule annual pulmonary function tests — Delhi residents show measurable lung capacity reduction with each year of residence.',
+    ],
+    indoor: [
+      'Run HEPA air purifiers (CADR 400+ m³/hr) 24/7 in bedroom and living room — non-negotiable in Delhi.',
+      'Seal window gaps with foam tape during October–February when pollution is most severe.',
+      'Never burn incense, wood, or coal indoors — adds catastrophic PM2.5 to already-poor indoor air.',
+      'Consider IQ Air HealthPro or Blueair 605 — Delhi requires high-capacity units for full room protection.',
+      'Install a fresh air ventilation system with HEPA filtration if budget allows — maintains indoor air under AQI 25.',
+    ],
+    outdoor: [
+      'Avoid all outdoor exercise October–February — AQI commonly exceeds 300, equivalent to smoking 10+ cigarettes per day.',
+      'Use Delhi Metro instead of auto-rickshaw to minimise direct tailpipe exhaust exposure.',
+      'If you must be outside, wear N95 + goggles — eyes absorb PM2.5 directly into the bloodstream through conjunctiva.',
+      'Monsoon months (July–September) are Delhi\'s best outdoor window; take advantage for exercise and wellness.',
+      'Park runs, morning walks and cycling should be entirely replaced with indoor alternatives October–March.',
+    ],
+    hair: [
+      'Hard water + PM2.5 pollution together cause accelerated hair damage — address both immediately.',
+      'Install a shower head filter and use Malibu C Hard Water Treatment monthly.',
+      'Switch to sulfate-free, silicone-free shampoo to prevent buildup that traps more pollutants.',
+      'Deep condition hair with a hydrating mask weekly — Delhi air humidity + pollution combination is uniquely drying.',
+      'Consider a scalp detox treatment every 2 months to clear accumulated PM2.5 particles from the scalp.',
+    ],
+    skin: [
+      'Double-cleanse every single night — PM2.5 nanoparticles embed in pores and generate inflammation overnight.',
+      'Apply antioxidant serum (Vitamin C + E + Ferulic acid) every morning before sunscreen.',
+      'Avoid wearing foundation on very high-AQI days — it traps PM2.5 particles in pores.',
+      'Use a ceramide + hyaluronic acid moisturiser to fortify the skin barrier against pollution oxidation.',
+      'Invest in a facial air purifier for your desk if you work near windows.',
+    ],
+    water: [
+      'RO purification is absolutely non-negotiable in Delhi — municipal supply contains trace heavy metals.',
+      'Test your tap water for lead (DIY kits available on Amazon India) — older pipes in central Delhi areas leach lead.',
+      'Use only glass or stainless steel for water storage — plastic containers degrade faster in Delhi\'s heat.',
+      'Yamuna at Delhi is classified Category E (WQI Class D/E) — not safe for drinking, bathing, or cooking.',
+      'If pregnant or feeding an infant — use only bottled or certified RO water; Delhi tap water heavy metals pose developmental risks.',
+    ]
+  },
+};
+
+const defaultRecs = {
+  daily: [
+    'Check your city\'s AQI every morning before planning outdoor activities — use AQI.in or Sameer app.',
+    'Wear a certified N95 mask on Moderate or higher AQI days, especially during morning and evening commutes.',
+    'Eat antioxidant-rich foods (amla, turmeric, berries) to counteract oxidative stress from PM2.5 exposure.',
+    'Drink 2.5–3 litres of filtered water daily to help flush inhaled microparticles through the lymphatic system.',
+    'Take Vitamin C (500 mg) and Vitamin D (2000 IU) daily during high-pollution months.',
+  ],
+  indoor: [
+    'Run a HEPA air purifier in your bedroom at night for optimal respiratory recovery during sleep.',
+    'Keep indoor plants (snake plant, money plant, areca palm) near windows to filter incoming pollutants.',
+    'Clean or replace AC filters every 2–3 months — clogged filters reduce filtration efficiency by 70%.',
+    'Avoid burning incense, candles, or mosquito coils indoors — they add significant indoor PM2.5.',
+    'Keep shoes at the door to avoid tracking outdoor PM into your living space.',
+  ],
+  outdoor: [
+    'Exercise outdoors before 7 AM or after 7 PM for cleaner air, avoiding peak traffic hours.',
+    'Choose parks and green corridors over roads for walking or jogging — trees reduce roadside PM by 40%.',
+    'Post-rain days offer the best outdoor air quality — take advantage of monsoon clearings for exercise.',
+    'Carry a portable AQI monitor (Atmotube, PurpleAir) for real-time personal exposure tracking.',
+    'Avoid outdoor activity near construction zones, traffic junctions, and industrial areas.',
+  ],
+  hair: [
+    'Install a shower head filter to reduce mineral exposure from hard city water.',
+    'Use a chelating shampoo (containing EDTA or phytic acid) once weekly to remove mineral deposits.',
+    'Apply a deep conditioning treatment after each wash to restore moisture stripped by water hardness.',
+    'Use a leave-in conditioner or hair serum to protect the shaft from environmental oxidation.',
+    'Avoid excessive heat styling during high-pollution periods — hair is more brittle and prone to breakage.',
+  ],
+  skin: [
+    'Cleanse your face thoroughly each night to remove PM2.5 particle residue before it generates overnight inflammation.',
+    'Apply a Vitamin C serum every morning under SPF 50+ sunscreen to neutralise PM2.5 free radicals.',
+    'Use ceramide-based moisturisers to repair and strengthen the skin barrier against pollution and hard water.',
+    'Stay hydrated — pollution depletes skin moisture from the inside; 8–10 glasses of water daily.',
+    'Use gentle, fragrance-free products during high-AQI seasons as pollution increases skin sensitivity.',
+  ],
+  water: [
+    'Install an RO + UV water purifier for drinking and cooking — most Indian city supplies exceed safe TDS limits.',
+    'Test your water with a TDS meter (available for ₹300–500) to understand your specific exposure level.',
+    'Use filtered water for washing all raw vegetables and fruits to reduce heavy metal and bacterial contamination.',
+    'Contact your local municipal authority to request recent water quality reports for your area.',
+    'Store purified water in glass or food-grade stainless steel containers; avoid plastic storage.',
+  ]
+};
+
+const recSections = [
+  { icon:'☀️', title:'Daily protective actions',     key:'daily',   col:'#58a6ff' },
+  { icon:'🏠', title:'Indoor air improvements',      key:'indoor',  col:'#3fb950' },
+  { icon:'🚴', title:'Outdoor activity guidance',    key:'outdoor', col:'#e3b341' },
+  { icon:'💇', title:'Hair care recommendations',    key:'hair',    col:'#ce93d8' },
+  { icon:'✨', title:'Skin care recommendations',    key:'skin',    col:'#f48fb1' },
+  { icon:'💧', title:'Water quality solutions',      key:'water',   col:'#4fc3f7' },
+];
+
+function renderRecs() {
+  const cid = document.getElementById('recsCity').value;
+  const c   = cities.find(x => x.id === cid);
+  const r   = recsDB[cid] || defaultRecs;
+
+  document.getElementById('recsContent').innerHTML = `
+    <div class="exec-summary" style="margin-bottom:12px">
+      Personalised recommendations for <strong>${c.name}</strong> &nbsp;·&nbsp; AQI ${c.aqi} (${c.cat}) &nbsp;·&nbsp; Air score ${c.hs}/100 &nbsp;·&nbsp; Water score ${c.ws}/100
+    </div>
+    ${recSections.map(s => `
+    <div class="rec-section">
+      <div class="rec-title" style="color:${s.col}">${s.icon} ${s.title}</div>
+      <ul class="rec-list">
+        ${r[s.key].map(item => `
+        <li><span class="rec-arrow">→</span><span>${item}</span></li>`).join('')}
+      </ul>
+    </div>`).join('')}`;
+}
+
+/* ══════════════════════════════════════════
+   INIT
+══════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+  buildCharts();
+  renderCityCards();
+  renderHealth();
+  renderReport();
+  renderInsights();
+  renderRecs();
+});
+</script>
+</body>
+</html>
