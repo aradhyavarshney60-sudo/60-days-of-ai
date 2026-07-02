@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Aradhya Varshney — AI &amp; ML Enthusiast</title>
+<meta name="description" content="Portfolio of Aradhya Varshney — AI & Machine Learning Enthusiast, GenAI Developer, Full Stack Learner." />
+
+<!-- Tailwind CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        fontFamily: {
+          display: ['"Space Grotesk"', 'sans-serif'],
+          body: ['"Inter"', 'sans-serif'],
+          mono: ['"JetBrains Mono"', 'monospace'],
+        },
+        colors: {
+          ink: {
+            950: '#05060f',
+            900: '#090b1a',
+            800: '#0d1024',
+            700: '#141833',
+          },
+          signal: {
+            violet: '#7c5cff',
+            cyan: '#33e6d8',
+            magenta: '#ff5cae',
+          },
+        },
+        boxShadow: {
+          glow: '0 0 40px -10px rgba(124,92,255,0.45)',
+          glowCyan: '0 0 40px -10px rgba(51,230,216,0.45)',
+        },
+      },
+    },
+  };
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+  :root { color-scheme: dark; }
+  html.light { color-scheme: light; }
+
+  * { scrollbar-width: thin; scrollbar-color: #7c5cff33 transparent; }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: linear-gradient(#7c5cff, #33e6d8); border-radius: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+
+  body {
+    background: #05060f;
+    font-family: 'Inter', sans-serif;
+    position: relative;
+    overflow-x: hidden;
+  }
+  html.light body { background: #f4f5fb; }
+
+  /* --- Grid + node backdrop (the "signal" motif) --- */
+  .bg-grid {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(rgba(124,92,255,0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,92,255,0.07) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 40%, transparent 90%);
+  }
+  html.light .bg-grid {
+    background-image:
+      linear-gradient(rgba(124,92,255,0.10) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124,92,255,0.10) 1px, transparent 1px);
+  }
+  .bg-orb {
+    position: fixed; z-index: 0; pointer-events: none; border-radius: 9999px;
+    filter: blur(90px); opacity: 0.35;
+  }
+
+  .glass {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+  html.light .glass {
+    background: rgba(255,255,255,0.55);
+    border: 1px solid rgba(20,20,40,0.08);
+  }
+
+  .text-gradient {
+    background: linear-gradient(90deg, #7c5cff, #33e6d8 60%, #ff5cae);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .nav-link { position: relative; }
+  .nav-link::after {
+    content: ''; position: absolute; left: 0; bottom: -4px; height: 1px; width: 0%;
+    background: linear-gradient(90deg,#7c5cff,#33e6d8);
+    transition: width .3s ease;
+  }
+  .nav-link:hover::after { width: 100%; }
+
+  /* reveal on scroll */
+  .reveal { opacity: 0; transform: translateY(24px); transition: opacity .7s ease, transform .7s ease; }
+  .reveal.in-view { opacity: 1; transform: translateY(0); }
+
+  /* typing caret */
+  .caret { display: inline-block; width: 2px; background: #33e6d8; margin-left: 3px; animation: blink 1s step-end infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* progress bar fill animation trigger */
+  .bar-fill { width: 0%; transition: width 1.4s cubic-bezier(.16,1,.3,1); }
+
+  .card-hover { transition: transform .4s cubic-bezier(.16,1,.3,1), box-shadow .4s ease, border-color .4s ease; }
+  .card-hover:hover { transform: translateY(-6px); box-shadow: 0 20px 60px -20px rgba(124,92,255,0.5); border-color: rgba(124,92,255,0.5); }
+
+  .chip {
+    border: 1px solid rgba(124,92,255,0.35);
+    background: rgba(124,92,255,0.08);
+  }
+  html.light .chip { background: rgba(124,92,255,0.08); border-color: rgba(124,92,255,0.25); }
+
+  #backToTop { transition: opacity .3s ease, transform .3s ease; }
+
+  .terminal-line { white-space: pre-wrap; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal, .bar-fill, #backToTop, .card-hover { transition: none !important; }
+    .caret { animation: none !important; }
+  }
+</style>
+</head>
+
+<body class="dark:bg-ink-950 text-ink-800 dark:text-slate-200 font-body antialiased">
+
+<!-- ambient backdrop -->
+<div class="bg-grid"></div>
+<div class="bg-orb bg-signal-violet w-[36rem] h-[36rem] -top-40 -left-40"></div>
+<div class="bg-orb bg-signal-cyan w-[30rem] h-[30rem] top-1/3 -right-40"></div>
+<div class="bg-orb bg-signal-magenta w-[26rem] h-[26rem] bottom-0 left-1/4"></div>
+
+<!-- ================= NAVBAR ================= -->
+<header class="fixed top-0 inset-x-0 z-50">
+  <nav class="max-w-6xl mx-auto mt-4 px-5 py-3 rounded-2xl glass flex items-center justify-between">
+    <a href="#home" class="font-display font-semibold tracking-tight text-lg text-ink-900 dark:text-white">
+      Aradhya<span class="text-gradient">.dev</span>
+    </a>
+
+    <div class="hidden md:flex items-center gap-8 font-mono text-xs uppercase tracking-widest text-ink-700 dark:text-slate-300">
+      <a href="#about" class="nav-link">About</a>
+      <a href="#skills" class="nav-link">Skills</a>
+      <a href="#projects" class="nav-link">Projects</a>
+      <a href="#achievements" class="nav-link">Log</a>
+      <a href="#contact" class="nav-link">Contact</a>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <button id="themeToggle" aria-label="Toggle dark and light mode"
+        class="w-9 h-9 rounded-full glass flex items-center justify-center text-sm hover:shadow-glow transition">
+        <span id="themeIcon">🌙</span>
+      </button>
+      <button id="menuBtn" aria-label="Open menu" class="md:hidden w-9 h-9 rounded-full glass flex items-center justify-center">
+        <span class="text-lg leading-none">☰</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- mobile menu -->
+  <div id="mobileMenu" class="hidden md:hidden max-w-6xl mx-auto mt-2 px-5">
+    <div class="glass rounded-2xl p-4 flex flex-col gap-4 font-mono text-xs uppercase tracking-widest text-center">
+      <a href="#about" class="mobile-link">About</a>
+      <a href="#skills" class="mobile-link">Skills</a>
+      <a href="#projects" class="mobile-link">Projects</a>
+      <a href="#achievements" class="mobile-link">Log</a>
+      <a href="#contact" class="mobile-link">Contact</a>
+    </div>
+  </div>
+</header>
+
+<!-- ================= HERO ================= -->
+<section id="home" class="relative z-10 min-h-screen flex items-center pt-32 pb-20 px-5">
+  <div class="max-w-6xl mx-auto w-full grid lg:grid-cols-5 gap-12 items-center">
+
+    <div class="lg:col-span-3 reveal">
+      <p class="font-mono text-xs tracking-[0.3em] uppercase text-signal-cyan mb-5">
+        // day 01–60 · building in public
+      </p>
+      <h1 class="font-display font-semibold text-4xl sm:text-5xl lg:text-6xl leading-[1.08] text-ink-900 dark:text-white">
+        Hi, I'm <span class="text-gradient">Aradhya Varshney</span>.
+        <br class="hidden sm:block" />
+        I turn ideas into working AI.
+      </h1>
+
+      <div class="mt-6 h-8 font-mono text-base sm:text-lg text-signal-violet dark:text-signal-cyan">
+        <span id="typedText"></span><span class="caret h-5 align-middle"></span>
+      </div>
+
+      <p class="mt-6 max-w-xl text-ink-700 dark:text-slate-400 leading-relaxed">
+        AI &amp; Machine Learning enthusiast passionate about Generative AI, Data Science, and
+        Web Development — currently shipping one AI project a day as part of the
+        <span class="text-ink-900 dark:text-white font-medium">60 Days AI Challenge</span>.
+      </p>
+
+      <div class="mt-9 flex flex-wrap items-center gap-4">
+        <a href="#projects"
+          class="px-6 py-3 rounded-full bg-gradient-to-r from-signal-violet to-signal-cyan text-white font-semibold text-sm shadow-glow hover:brightness-110 transition">
+          View my work
+        </a>
+        <a href="#contact"
+          class="px-6 py-3 rounded-full glass font-semibold text-sm text-ink-900 dark:text-white hover:border-signal-cyan/60 transition">
+          Get in touch
+        </a>
+      </div>
+
+      <div class="mt-10 flex items-center gap-5">
+        <a href="https://github.com/aradhyavarshney60-sudo" target="_blank" rel="noopener" aria-label="GitHub"
+          class="w-10 h-10 rounded-full glass flex items-center justify-center hover:text-signal-cyan hover:shadow-glowCyan transition">
+          <svg viewBox="0 0 24 24" class="w-5 h-5 fill-current"><path d="M12 .5C5.73.5.5 5.73.5 12c0 5.1 3.29 9.42 7.86 10.96.58.1.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.7-3.88-1.54-3.88-1.54-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.71.08-.71 1.17.08 1.78 1.2 1.78 1.2 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.56-.29-5.25-1.28-5.25-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.2-1.49 3.17-1.18 3.17-1.18.64 1.59.24 2.76.12 3.05.74.81 1.18 1.84 1.18 3.1 0 4.43-2.7 5.4-5.27 5.69.41.36.78 1.07.78 2.16 0 1.56-.02 2.82-.02 3.2 0 .31.21.67.8.56A10.52 10.52 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>
+        </a>
+        <a href="https://www.linkedin.com/in/aradhya-varshney-a73949353/" target="_blank" rel="noopener" aria-label="LinkedIn"
+          class="w-10 h-10 rounded-full glass flex items-center justify-center hover:text-signal-cyan hover:shadow-glowCyan transition">
+          <svg viewBox="0 0 24 24" class="w-5 h-5 fill-current"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.02-3.03-1.85-3.03-1.86 0-2.15 1.45-2.15 2.94v5.66H9.35V9h3.41v1.56h.05c.47-.9 1.63-1.85 3.36-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29ZM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12ZM7.12 20.45H3.56V9h3.56v11.45Z"/></svg>
+        </a>
+        <a href="mailto:aradhyavarshney60@gmail.com" aria-label="Email"
+          class="w-10 h-10 rounded-full glass flex items-center justify-center hover:text-signal-cyan hover:shadow-glowCyan transition">
+          <svg viewBox="0 0 24 24" class="w-5 h-5 fill-current"><path d="M2 5.5C2 4.67 2.67 4 3.5 4h17c.83 0 1.5.67 1.5 1.5v13c0 .83-.67 1.5-1.5 1.5h-17A1.5 1.5 0 0 1 2 18.5v-13Zm2.2.5 7.8 6.1 7.8-6.1H4.2Zm15.8 1.6-7.53 5.9a1 1 0 0 1-1.24 0L3.7 7.6V18h16.3V7.6Z"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- signature element: live terminal card -->
+    <div class="lg:col-span-2 reveal" style="transition-delay:.15s">
+      <div class="glass rounded-2xl p-5 shadow-glow max-w-md mx-auto">
+        <div class="flex items-center gap-1.5 pb-3 border-b border-white/10">
+          <span class="w-2.5 h-2.5 rounded-full bg-signal-magenta"></span>
+          <span class="w-2.5 h-2.5 rounded-full bg-yellow-400/80"></span>
+          <span class="w-2.5 h-2.5 rounded-full bg-signal-cyan"></span>
+          <span class="ml-auto font-mono text-[10px] text-ink-600 dark:text-slate-500">challenge_log.sh</span>
+        </div>
+        <div id="terminalBody" class="pt-4 font-mono text-[13px] leading-relaxed text-slate-300 min-h-[220px]">
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ABOUT ================= -->
+<section id="about" class="relative z-10 max-w-6xl mx-auto px-5 py-24">
+  <div class="grid md:grid-cols-12 gap-10 items-start">
+    <div class="md:col-span-4 reveal">
+      <p class="font-mono text-xs tracking-[0.3em] uppercase text-signal-violet mb-3">01 · About</p>
+      <h2 class="font-display font-semibold text-3xl sm:text-4xl text-ink-900 dark:text-white leading-tight">
+        Learning by shipping, not just studying.
+      </h2>
+    </div>
+    <div class="md:col-span-8 reveal" style="transition-delay:.1s">
+      <p class="text-lg leading-relaxed text-ink-700 dark:text-slate-300">
+        I am an AI and Machine Learning enthusiast passionate about building practical AI applications
+        using Generative AI, Machine Learning, Data Science, and Web Development. I enjoy building modern,
+        real-world projects while continuously learning new technologies. Currently, I am actively
+        participating in the <span class="text-ink-900 dark:text-white font-semibold">60 Days AI Challenge</span>,
+        where I create and share AI projects every day.
+      </p>
+
+      <div class="mt-8 grid sm:grid-cols-3 gap-4">
+        <div class="glass rounded-xl p-5">
+          <p class="font-display text-2xl font-semibold text-gradient" data-counter="60">0</p>
+          <p class="font-mono text-[11px] uppercase tracking-widest text-ink-600 dark:text-slate-500 mt-1">Day AI Challenge</p>
+        </div>
+        <div class="glass rounded-xl p-5">
+          <p class="font-display text-2xl font-semibold text-gradient" data-counter="3">0</p>
+          <p class="font-mono text-[11px] uppercase tracking-widest text-ink-600 dark:text-slate-500 mt-1">Projects shipped</p>
+        </div>
+        <div class="glass rounded-xl p-5">
+          <p class="font-display text-2xl font-semibold text-gradient" data-counter="9">0</p>
+          <p class="font-mono text-[11px] uppercase tracking-widest text-ink-600 dark:text-slate-500 mt-1">Tools &amp; stacks</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= SKILLS ================= -->
+<section id="skills" class="relative z-10 max-w-6xl mx-auto px-5 py-24">
+  <p class="font-mono text-xs tracking-[0.3em] uppercase text-signal-violet mb-3 reveal">02 · Skills</p>
+  <h2 class="font-display font-semibold text-3xl sm:text-4xl text-ink-900 dark:text-white mb-12 reveal">
+    Stack &amp; capabilities
+  </h2>
+
+  <div class="grid lg:grid-cols-2 gap-10">
+    <!-- technical bars -->
+    <div class="glass rounded-2xl p-7 reveal">
+      <h3 class="font-mono text-xs uppercase tracking-widest text-signal-cyan mb-6">Technical</h3>
+      <div class="space-y-5" id="skillBars">
+        <!-- injected -->
+      </div>
+    </div>
+
+    <div class="space-y-10">
+      <!-- tools -->
+      <div class="glass rounded-2xl p-7 reveal" style="transition-delay:.1s">
+        <h3 class="font-mono text-xs uppercase tracking-widest text-signal-cyan mb-5">Tools</h3>
+        <div class="flex flex-wrap gap-2.5">
+          <span class="chip px-3.5 py-1.5 rounded-full text-sm">VS Code</span>
+          <span class="chip px-3.5 py-1.5 rounded-full text-sm">Git</span>
+          <span class="chip px-3.5 py-1.5 rounded-full text-sm">GitHub</span>
+          <span class="chip px-3.5 py-1.5 rounded-full text-sm">Jupyter Notebook</span>
+          <span class="chip px-3.5 py-1.5 rounded-full text-sm">Google Colab</span>
+          <span class="chip px-3.5 py-1.5 rounded-full text-sm">Claude AI</span>
+          <span class="chip px-3.5 py-1.5 rounded-full text-sm">ChatGPT</span>
+        </div>
+      </div>
+
+      <!-- soft skills -->
+      <div class="glass rounded-2xl p-7 reveal" style="transition-delay:.15s">
+        <h3 class="font-mono text-xs uppercase tracking-widest text-signal-cyan mb-5">Soft skills</h3>
+        <div class="flex flex-wrap gap-2.5">
+          <span class="chip px-3.5 py-1.5 rounded-full text-sm">Problem Solving</span>
+          <span class="chip px-3.5 py-1.5 rounded-full text-sm">Leadership</span>
+          <span class="chip px-3.5 py-1.5 rounded-full text-sm">Communication</span>
+          <span class="chip px-3.5 py-1.5 rounded-full text-sm">Teamwork</span>
+          <span class="chip px-3.5 py-1.5 rounded-full text-sm">Quick Learning</span>
+          <span class="chip px-3.5 py-1.5 rounded-full text-sm">Time Management</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PROJECTS ================= -->
+<section id="projects" class="relative z-10 max-w-6xl mx-auto px-5 py-24">
+  <p class="font-mono text-xs tracking-[0.3em] uppercase text-signal-violet mb-3 reveal">03 · Projects</p>
+  <h2 class="font-display font-semibold text-3xl sm:text-4xl text-ink-900 dark:text-white mb-12 reveal">
+    Selected builds
+  </h2>
+
+  <div class="grid md:grid-cols-3 gap-6">
+
+    <article class="glass card-hover rounded-2xl p-7 flex flex-col reveal">
+      <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-signal-violet to-signal-cyan flex items-center justify-center text-lg mb-6">🥗</div>
+      <h3 class="font-display font-semibold text-lg text-ink-900 dark:text-white mb-2">NutriScope AI Nutrition Analytics</h3>
+      <p class="text-sm text-ink-700 dark:text-slate-400 leading-relaxed flex-1">
+        AI-powered nutrition analytics platform with food logging, a live dashboard,
+        meal planner, and nutrition risk analysis.
+      </p>
+      <div class="flex flex-wrap gap-2 mt-6">
+        <span class="chip px-2.5 py-1 rounded-full text-[11px] font-mono">HTML</span>
+        <span class="chip px-2.5 py-1 rounded-full text-[11px] font-mono">CSS</span>
+        <span class="chip px-2.5 py-1 rounded-full text-[11px] font-mono">JavaScript</span>
+      </div>
+    </article>
+
+    <article class="glass card-hover rounded-2xl p-7 flex flex-col reveal" style="transition-delay:.1s">
+      <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-signal-cyan to-signal-magenta flex items-center justify-center text-lg mb-6">📄</div>
+      <h3 class="font-display font-semibold text-lg text-ink-900 dark:text-white mb-2">AI Resume Analyzer</h3>
+      <p class="text-sm text-ink-700 dark:text-slate-400 leading-relaxed flex-1">
+        AI-powered resume analysis tool that evaluates resumes and provides
+        actionable, specific improvement suggestions.
+      </p>
+      <div class="flex flex-wrap gap-2 mt-6">
+        <span class="chip px-2.5 py-1 rounded-full text-[11px] font-mono">Python</span>
+        <span class="chip px-2.5 py-1 rounded-full text-[11px] font-mono">AI</span>
+      </div>
+    </article>
+
+    <article class="glass card-hover rounded-2xl p-7 flex flex-col reveal" style="transition-delay:.2s">
+      <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-signal-magenta to-signal-violet flex items-center justify-center text-lg mb-6">🌐</div>
+      <h3 class="font-display font-semibold text-lg text-ink-900 dark:text-white mb-2">Personal Portfolio Website</h3>
+      <p class="text-sm text-ink-700 dark:text-slate-400 leading-relaxed flex-1">
+        A modern, responsive portfolio showcasing projects, skills, and
+        achievements — the very site you're looking at.
+      </p>
+      <div class="flex flex-wrap gap-2 mt-6">
+        <span class="chip px-2.5 py-1 rounded-full text-[11px] font-mono">HTML</span>
+        <span class="chip px-2.5 py-1 rounded-full text-[11px] font-mono">Tailwind CSS</span>
+        <span class="chip px-2.5 py-1 rounded-full text-[11px] font-mono">JavaScript</span>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- ================= ACHIEVEMENTS ================= -->
+<section id="achievements" class="relative z-10 max-w-6xl mx-auto px-5 py-24">
+  <p class="font-mono text-xs tracking-[0.3em] uppercase text-signal-violet mb-3 reveal">04 · Log</p>
+  <h2 class="font-display font-semibold text-3xl sm:text-4xl text-ink-900 dark:text-white mb-12 reveal">
+    Experience &amp; achievements
+  </h2>
+
+  <div class="relative pl-8 border-l border-white/10 space-y-10">
+    <div class="relative reveal">
+      <span class="absolute -left-[38px] top-1 w-4 h-4 rounded-full bg-gradient-to-br from-signal-violet to-signal-cyan shadow-glow"></span>
+      <h3 class="font-display font-semibold text-ink-900 dark:text-white">60 Days AI Challenge</h3>
+      <p class="text-sm text-ink-700 dark:text-slate-400 mt-1">Actively participating — building and sharing one AI project every day.</p>
+    </div>
+    <div class="relative reveal" style="transition-delay:.1s">
+      <span class="absolute -left-[38px] top-1 w-4 h-4 rounded-full bg-gradient-to-br from-signal-violet to-signal-cyan shadow-glow"></span>
+      <h3 class="font-display font-semibold text-ink-900 dark:text-white">Multiple AI applications shipped</h3>
+      <p class="text-sm text-ink-700 dark:text-slate-400 mt-1">Built and deployed several AI-powered tools, from nutrition analytics to resume review.</p>
+    </div>
+    <div class="relative reveal" style="transition-delay:.2s">
+      <span class="absolute -left-[38px] top-1 w-4 h-4 rounded-full bg-gradient-to-br from-signal-violet to-signal-cyan shadow-glow"></span>
+      <h3 class="font-display font-semibold text-ink-900 dark:text-white">Hands-on with Generative AI tools</h3>
+      <p class="text-sm text-ink-700 dark:text-slate-400 mt-1">Practical experience applying GenAI tools like Claude AI and ChatGPT to real workflows.</p>
+    </div>
+    <div class="relative reveal" style="transition-delay:.3s">
+      <span class="absolute -left-[38px] top-1 w-4 h-4 rounded-full bg-gradient-to-br from-signal-violet to-signal-cyan shadow-glow"></span>
+      <h3 class="font-display font-semibold text-ink-900 dark:text-white">Real-world problem solving</h3>
+      <p class="text-sm text-ink-700 dark:text-slate-400 mt-1">Passionate about applying AI to solve genuine, everyday problems.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CONTACT ================= -->
+<section id="contact" class="relative z-10 max-w-6xl mx-auto px-5 py-24">
+  <div class="glass rounded-3xl p-10 sm:p-14 text-center reveal shadow-glow">
+    <p class="font-mono text-xs tracking-[0.3em] uppercase text-signal-cyan mb-4">05 · Contact</p>
+    <h2 class="font-display font-semibold text-3xl sm:text-4xl text-ink-900 dark:text-white mb-4">
+      Let's build something together.
+    </h2>
+    <p class="text-ink-700 dark:text-slate-400 max-w-xl mx-auto mb-9">
+      Open to collaborations, internships, and interesting AI ideas. Based in India — reachable anywhere online.
+    </p>
+
+    <div class="flex flex-wrap justify-center gap-4">
+      <a href="mailto:aradhyavarshney60@gmail.com"
+        class="px-6 py-3 rounded-full bg-gradient-to-r from-signal-violet to-signal-cyan text-white font-semibold text-sm shadow-glow hover:brightness-110 transition">
+        aradhyavarshney60@gmail.com
+      </a>
+      <a href="https://www.linkedin.com/in/aradhya-varshney-a73949353/" target="_blank" rel="noopener"
+        class="px-6 py-3 rounded-full glass font-semibold text-sm hover:border-signal-cyan/60 transition">
+        LinkedIn
+      </a>
+      <a href="https://github.com/aradhyavarshney60-sudo" target="_blank" rel="noopener"
+        class="px-6 py-3 rounded-full glass font-semibold text-sm hover:border-signal-cyan/60 transition">
+        GitHub
+      </a>
+    </div>
+
+    <p class="font-mono text-xs text-ink-600 dark:text-slate-500 mt-9">📍 India</p>
+  </div>
+</section>
+
+<!-- ================= FOOTER ================= -->
+<footer class="relative z-10 border-t border-white/10 mt-10">
+  <div class="max-w-6xl mx-auto px-5 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+    <p class="font-mono text-xs text-ink-600 dark:text-slate-500">
+      © <span id="year"></span> Aradhya Varshney. Built with HTML, Tailwind &amp; curiosity.
+    </p>
+    <div class="flex items-center gap-4 text-ink-600 dark:text-slate-500">
+      <a href="https://github.com/aradhyavarshney60-sudo" target="_blank" rel="noopener" class="hover:text-signal-cyan transition text-sm">GitHub</a>
+      <a href="https://www.linkedin.com/in/aradhya-varshney-a73949353/" target="_blank" rel="noopener" class="hover:text-signal-cyan transition text-sm">LinkedIn</a>
+      <a href="mailto:aradhyavarshney60@gmail.com" class="hover:text-signal-cyan transition text-sm">Email</a>
+    </div>
+  </div>
+</footer>
+
+<!-- Back to top -->
+<button id="backToTop" aria-label="Back to top"
+  class="fixed bottom-7 right-7 z-50 w-11 h-11 rounded-full glass shadow-glow flex items-center justify-center opacity-0 translate-y-4 pointer-events-none">
+  <svg viewBox="0 0 24 24" class="w-5 h-5 fill-current text-signal-cyan"><path d="M12 4l-8 8h5v8h6v-8h5z"/></svg>
+</button>
+
+<script>
+  // ===== THEME TOGGLE =====
+  const root = document.documentElement;
+  const themeToggle = document.getElementById('themeToggle');
+  const themeIcon = document.getElementById('themeIcon');
+
+  function applyTheme(mode) {
+    if (mode === 'light') {
+      root.classList.add('light');
+      root.classList.remove('dark');
+      themeIcon.textContent = '☀️';
+    } else {
+      root.classList.remove('light');
+      root.classList.add('dark');
+      themeIcon.textContent = '🌙';
+    }
+    localStorage.setItem('theme', mode);
+  }
+  applyTheme(localStorage.getItem('theme') || 'dark');
+  themeToggle.addEventListener('click', () => {
+    applyTheme(root.classList.contains('light') ? 'dark' : 'light');
+  });
+
+  // ===== MOBILE MENU =====
+  const menuBtn = document.getElementById('menuBtn');
+  const mobileMenu = document.getElementById('mobileMenu');
+  menuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+  document.querySelectorAll('.mobile-link').forEach(l => l.addEventListener('click', () => mobileMenu.classList.add('hidden')));
+
+  // ===== TYPING EFFECT (hero subtitle) =====
+  const phrases = [
+    'AI & Machine Learning Enthusiast',
+    'GenAI Developer',
+    'Full Stack Learner',
+    'Building in public — Day by day.'
+  ];
+  const typedEl = document.getElementById('typedText');
+  let pIdx = 0, cIdx = 0, deleting = false;
+
+  function typeLoop() {
+    const phrase = phrases[pIdx];
+    if (!deleting) {
+      cIdx++;
+      typedEl.textContent = phrase.slice(0, cIdx);
+      if (cIdx === phrase.length) {
+        deleting = true;
+        setTimeout(typeLoop, 1400);
+        return;
+      }
+    } else {
+      cIdx--;
+      typedEl.textContent = phrase.slice(0, cIdx);
+      if (cIdx === 0) {
+        deleting = false;
+        pIdx = (pIdx + 1) % phrases.length;
+      }
+    }
+    setTimeout(typeLoop, deleting ? 35 : 65);
+  }
+  typeLoop();
+
+  // ===== TERMINAL SIGNATURE CARD =====
+  const terminalLines = [
+    '$ whoami',
+    'aradhya_varshney — AI/ML enthusiast',
+    '',
+    '$ cat challenge.log',
+    'Day 01: shipped NutriScope AI Nutrition Analytics',
+    'Day 12: shipped AI Resume Analyzer',
+    'Day 27: shipped Personal Portfolio Website',
+    'Day 60: ...in progress',
+    '',
+    '$ status --current',
+    'building → learning → shipping ✅'
+  ];
+  const termBody = document.getElementById('terminalBody');
+  let lineIdx = 0, charIdx = 0;
+  function typeTerminal() {
+    if (lineIdx >= terminalLines.length) return;
+    const line = terminalLines[lineIdx];
+    let current = termBody.querySelector('.current-line');
+    if (!current) {
+      current = document.createElement('div');
+      current.className = 'terminal-line current-line';
+      current.innerHTML = line.startsWith('$') ? `<span class="text-signal-cyan">${''}</span>` : '';
+      termBody.appendChild(current);
+    }
+    charIdx++;
+    const visible = line.slice(0, charIdx);
+    current.innerHTML = line.startsWith('$')
+      ? `<span class="text-signal-cyan">${visible}</span>`
+      : `<span class="text-slate-300">${visible}</span>`;
+    if (charIdx >= line.length) {
+      current.classList.remove('current-line');
+      lineIdx++; charIdx = 0;
+      setTimeout(typeTerminal, line === '' ? 120 : 260);
+    } else {
+      setTimeout(typeTerminal, 18);
+    }
+  }
+  typeTerminal();
+
+  // ===== SKILL BARS (injected + animated on view) =====
+  const skills = [
+    { name: 'Python', level: 88 },
+    { name: 'Machine Learning', level: 82 },
+    { name: 'Artificial Intelligence', level: 85 },
+    { name: 'Generative AI', level: 90 },
+    { name: 'HTML / CSS / JavaScript', level: 84 },
+    { name: 'SQL', level: 75 },
+    { name: 'Data Analysis', level: 80 },
+  ];
+  const skillBarsEl = document.getElementById('skillBars');
+  skills.forEach(s => {
+    const row = document.createElement('div');
+    row.innerHTML = `
+      <div class="flex justify-between mb-1.5">
+        <span class="text-sm font-medium text-ink-800 dark:text-slate-200">${s.name}</span>
+        <span class="text-xs font-mono text-signal-cyan">${s.level}%</span>
+      </div>
+      <div class="h-2 rounded-full bg-white/5 dark:bg-white/5 overflow-hidden">
+        <div class="bar-fill h-full rounded-full bg-gradient-to-r from-signal-violet to-signal-cyan" data-level="${s.level}"></div>
+      </div>`;
+    skillBarsEl.appendChild(row);
+  });
+
+  // ===== SCROLL REVEAL + counters + bars =====
+  const revealEls = document.querySelectorAll('.reveal');
+  const counters = document.querySelectorAll('[data-counter]');
+  const bars = document.querySelectorAll('.bar-fill');
+  let countersDone = false, barsDone = false;
+
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('in-view');
+
+        if (entry.target.id === 'about' && !countersDone) {
+          countersDone = true;
+          counters.forEach(c => {
+            const target = parseInt(c.dataset.counter, 10);
+            let cur = 0;
+            const step = Math.max(1, Math.round(target / 40));
+            const tick = () => {
+              cur += step;
+              if (cur >= target) { c.textContent = target; return; }
+              c.textContent = cur;
+              requestAnimationFrame(tick);
+            };
+            tick();
+          });
+        }
+
+        if (entry.target.id === 'skills' && !barsDone) {
+          barsDone = true;
+          bars.forEach(b => { b.style.width = b.dataset.level + '%'; });
+        }
+      }
+    });
+  }, { threshold: 0.2 });
+
+  revealEls.forEach(el => io.observe(el));
+  io.observe(document.getElementById('about'));
+  io.observe(document.getElementById('skills'));
+
+  // ===== BACK TO TOP =====
+  const backToTop = document.getElementById('backToTop');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 500) {
+      backToTop.classList.remove('opacity-0', 'translate-y-4', 'pointer-events-none');
+    } else {
+      backToTop.classList.add('opacity-0', 'translate-y-4', 'pointer-events-none');
+    }
+  });
+  backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+  // ===== FOOTER YEAR =====
+  document.getElementById('year').textContent = new Date().getFullYear();
+</script>
+</body>
+</html>
