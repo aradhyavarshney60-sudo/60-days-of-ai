@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scanline — ATS Resume Checker</title>
+<style>
+  :root{
+    --bg:#0d1117;
+    --panel:#131a23;
+    --panel-2:#0f151d;
+    --line:#1f2a37;
+    --ink:#e6edf3;
+    --ink-dim:#8a97a6;
+    --ink-faint:#5a6674;
+    --signal:#39ff9e;
+    --signal-dim:#1f8f5c;
+    --amber:#ffb454;
+    --red:#ff5c5c;
+    --mono: "SF Mono", "Cascadia Code", "JetBrains Mono", Consolas, Menlo, monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);font-family:var(--sans);}
+  body{
+    min-height:100vh;
+    background-image:
+      linear-gradient(180deg, rgba(57,255,158,0.03), transparent 300px),
+      repeating-linear-gradient(180deg, rgba(255,255,255,0.012) 0px, rgba(255,255,255,0.012) 1px, transparent 1px, transparent 3px);
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:28px 20px 80px;}
+
+  /* Header */
+  header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:28px;flex-wrap:wrap;}
+  .brand{display:flex;align-items:center;gap:12px;}
+  .brand-mark{
+    width:38px;height:38px;border:1.5px solid var(--signal);border-radius:8px;
+    display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;
+    background:radial-gradient(circle at 50% 50%, rgba(57,255,158,0.15), transparent 70%);
+  }
+  .brand-mark::after{
+    content:"";position:absolute;left:0;right:0;height:2px;background:var(--signal);
+    box-shadow:0 0 8px var(--signal), 0 0 16px var(--signal);
+    animation:sweep 2.6s ease-in-out infinite;
+  }
+  @keyframes sweep{0%,100%{top:4px;opacity:.9}50%{top:32px;opacity:.3}}
+  .brand-name{font-family:var(--mono);font-size:15px;letter-spacing:0.14em;text-transform:uppercase;color:var(--ink);}
+  .brand-sub{font-size:11px;color:var(--ink-faint);letter-spacing:0.08em;margin-top:2px;}
+  .tag{font-family:var(--mono);font-size:11px;color:var(--signal);border:1px solid var(--signal-dim);padding:5px 10px;border-radius:20px;letter-spacing:0.05em;background:rgba(57,255,158,0.06);}
+
+  h1{font-family:var(--mono);font-size:clamp(22px,3vw,30px);font-weight:600;letter-spacing:-0.01em;margin:0 0 6px;}
+  .lede{color:var(--ink-dim);font-size:14.5px;max-width:640px;line-height:1.55;margin:0 0 30px;}
+
+  /* Layout */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;}
+  @media (max-width:880px){.grid{grid-template-columns:1fr;}}
+
+  .panel{
+    background:linear-gradient(180deg, var(--panel), var(--panel-2));
+    border:1px solid var(--line);border-radius:14px;padding:22px;position:relative;
+  }
+  .panel-title{
+    font-family:var(--mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;
+    color:var(--ink-faint);display:flex;align-items:center;gap:8px;margin-bottom:16px;
+  }
+  .panel-title .dot{width:6px;height:6px;border-radius:50%;background:var(--signal);box-shadow:0 0 6px var(--signal);}
+
+  label{display:block;font-size:12.5px;color:var(--ink-dim);margin-bottom:8px;font-weight:500;}
+  textarea{
+    width:100%;background:#0a0f15;border:1px solid var(--line);border-radius:9px;color:var(--ink);
+    padding:12px 13px;font-family:var(--sans);font-size:13.5px;line-height:1.55;resize:vertical;
+    outline:none;transition:border-color .15s ease, box-shadow .15s ease;
+  }
+  textarea:focus{border-color:var(--signal-dim);box-shadow:0 0 0 3px rgba(57,255,158,0.08);}
+  textarea#resumeText{min-height:200px;}
+  textarea#jobText{min-height:120px;}
+
+  .field{margin-bottom:16px;}
+  .file-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+  .file-btn{
+    font-family:var(--mono);font-size:12px;background:#0a0f15;border:1px dashed var(--line);color:var(--ink-dim);
+    padding:9px 14px;border-radius:8px;cursor:pointer;transition:all .15s ease;white-space:nowrap;
+  }
+  .file-btn:hover{border-color:var(--signal-dim);color:var(--signal);}
+  .file-name{font-size:12px;color:var(--ink-faint);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  input[type=file]{display:none;}
+  .hint{font-size:11.5px;color:var(--ink-faint);margin-top:6px;line-height:1.5;}
+  .hint.warn{color:var(--amber);}
+
+  .run-btn{
+    width:100%;margin-top:6px;padding:13px;border-radius:9px;border:none;cursor:pointer;
+    font-family:var(--mono);font-size:13px;letter-spacing:0.06em;text-transform:uppercase;font-weight:600;
+    background:var(--signal);color:#04140c;transition:transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+    box-shadow:0 0 0 rgba(57,255,158,0);
+  }
+  .run-btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 6px 24px rgba(57,255,158,0.25);}
+  .run-btn:active:not(:disabled){transform:translateY(0);}
+  .run-btn:disabled{opacity:0.5;cursor:not-allowed;}
+
+  /* Results panel */
+  .results-empty{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+    padding:50px 20px;color:var(--ink-faint);min-height:340px;
+  }
+  .results-empty svg{margin-bottom:16px;opacity:0.5;}
+  .results-empty .t1{font-family:var(--mono);font-size:13px;color:var(--ink-dim);margin-bottom:6px;}
+  .results-empty .t2{font-size:12.5px;max-width:280px;line-height:1.5;}
+
+  .scan-stage{position:relative;min-height:340px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;border-radius:10px;}
+  .scan-stage.active{background:#080d12;}
+  .scan-line{
+    position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg, transparent, var(--signal), transparent);
+    box-shadow:0 0 14px var(--signal);animation:scandown 1.6s linear infinite;
+  }
+  @keyframes scandown{0%{top:0%}100%{top:100%}}
+  .scan-label{font-family:var(--mono);font-size:12px;color:var(--signal);letter-spacing:0.08em;text-align:center;z-index:2;}
+  .scan-sub{font-family:var(--mono);font-size:11px;color:var(--ink-faint);margin-top:8px;z-index:2;}
+
+  .error-box{
+    border:1px solid #4a1f1f;background:rgba(255,92,92,0.06);color:#ff9d9d;border-radius:10px;
+    padding:16px;font-size:13px;line-height:1.5;
+  }
+  .error-box .et{font-family:var(--mono);color:var(--red);font-size:11px;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:6px;}
+
+  /* Verdict */
+  .verdict-wrap{display:flex;gap:22px;align-items:center;margin-bottom:22px;flex-wrap:wrap;}
+  .dial{position:relative;width:132px;height:132px;flex-shrink:0;}
+  .dial svg{transform:rotate(-90deg);}
+  .dial-bg{fill:none;stroke:#1a2430;stroke-width:9;}
+  .dial-fg{fill:none;stroke-width:9;stroke-linecap:round;transition:stroke-dashoffset 1.1s cubic-bezier(.2,.8,.2,1), stroke 0.4s ease;}
+  .dial-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .dial-score{font-family:var(--mono);font-size:30px;font-weight:700;line-height:1;}
+  .dial-max{font-family:var(--mono);font-size:10px;color:var(--ink-faint);margin-top:2px;}
+
+  .verdict-text{flex:1;min-width:180px;}
+  .verdict-badge{
+    display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;
+    padding:4px 10px;border-radius:20px;margin-bottom:10px;font-weight:600;
+  }
+  .verdict-summary{font-size:14px;line-height:1.6;color:var(--ink);}
+
+  .section-title{
+    font-family:var(--mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-faint);
+    margin:22px 0 10px;padding-top:16px;border-top:1px solid var(--line);
+  }
+  .fix-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px;}
+  .fix-list li{
+    display:flex;gap:10px;font-size:13px;line-height:1.55;color:var(--ink);
+    background:#0a0f15;border:1px solid var(--line);border-radius:9px;padding:11px 13px;
+    animation:fadeUp .4s ease both;
+  }
+  .fix-list li .marker{font-family:var(--mono);color:var(--amber);flex-shrink:0;font-size:12px;padding-top:1px;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+  .kw-wrap{display:flex;flex-wrap:wrap;gap:7px;}
+  .kw{font-family:var(--mono);font-size:11.5px;padding:5px 10px;border-radius:6px;border:1px solid var(--line);}
+  .kw.found{color:var(--signal);border-color:var(--signal-dim);background:rgba(57,255,158,0.06);}
+  .kw.missing{color:var(--red);border-color:#4a1f1f;background:rgba(255,92,92,0.06);}
+
+  /* Docs panel */
+  .docs{margin-top:36px;border:1px solid var(--line);border-radius:14px;background:var(--panel-2);overflow:hidden;}
+  .docs-toggle{
+    width:100%;background:none;border:none;color:var(--ink);cursor:pointer;padding:18px 22px;
+    display:flex;align-items:center;justify-content:space-between;font-family:var(--mono);font-size:13px;letter-spacing:0.04em;
+  }
+  .docs-toggle .chev{transition:transform .2s ease;color:var(--ink-faint);}
+  .docs-toggle.open .chev{transform:rotate(180deg);}
+  .docs-body{max-height:0;overflow:hidden;transition:max-height .3s ease;padding:0 22px;}
+  .docs-body.open{max-height:2400px;padding-bottom:24px;}
+  .docs-body h3{font-family:var(--mono);font-size:13px;color:var(--signal);margin:20px 0 8px;}
+  .docs-body p, .docs-body li{font-size:13.5px;line-height:1.65;color:var(--ink-dim);}
+  .docs-body ul{padding-left:20px;margin:6px 0;}
+  .docs-body pre{
+    background:#0a0f15;border:1px solid var(--line);border-radius:9px;padding:14px;overflow-x:auto;
+    font-family:var(--mono);font-size:12px;line-height:1.6;color:#b8c4d0;white-space:pre-wrap;
+  }
+  .docs-body code{font-family:var(--mono);font-size:12px;color:var(--signal);background:rgba(57,255,158,0.08);padding:1px 5px;border-radius:4px;}
+
+  footer{text-align:center;margin-top:40px;font-family:var(--mono);font-size:11px;color:var(--ink-faint);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <div>
+        <div class="brand-name">Scanline</div>
+        <div class="brand-sub">ATS Resume Checker</div>
+      </div>
+    </div>
+    <div class="tag">● Pass / Fail Scan</div>
+  </header>
+
+  <h1>Will your resume clear the bots?</h1>
+  <p class="lede">Paste your resume and the job description. Scanline runs the same keyword-matching and formatting checks an Applicant Tracking System uses, then gives you a straight verdict and the fastest fixes.</p>
+
+  <div class="grid">
+    <!-- INPUT PANEL -->
+    <div class="panel">
+      <div class="panel-title"><span class="dot"></span>Input</div>
+
+      <div class="field">
+        <label for="resumeText">Resume text</label>
+        <div class="file-row">
+          <button class="file-btn" id="fileBtn" type="button">↑ Upload .txt file</button>
+          <span class="file-name" id="fileName"></span>
+        </div>
+        <input type="file" id="fileInput" accept=".txt,.pdf,.docx">
+        <textarea id="resumeText" placeholder="Paste your resume text here..."></textarea>
+        <div class="hint" id="fileHint">PDF/DOCX can't be parsed in-browser without a library — upload will attempt plain text extraction, but for reliable results, copy-paste your resume text directly.</div>
+      </div>
+
+      <div class="field">
+        <label for="jobText">Job description</label>
+        <textarea id="jobText" placeholder="Paste the job description you're applying to..."></textarea>
+      </div>
+
+      <button class="run-btn" id="runBtn">Run ATS Scan →</button>
+    </div>
+
+    <!-- RESULTS PANEL -->
+    <div class="panel">
+      <div class="panel-title"><span class="dot"></span>Scan Result</div>
+      <div id="resultsArea">
+        <div class="results-empty">
+          <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="12" y2="15"/></svg>
+          <div class="t1">No scan run yet</div>
+          <div class="t2">Fill in your resume and the job description, then run the scan to see your ATS score and verdict.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOCS PANEL -->
+  <div class="docs">
+    <button class="docs-toggle" id="docsToggle">
+      <span>▸ How this was built</span>
+      <span class="chev">▾</span>
+    </button>
+    <div class="docs-body" id="docsBody">
+      <h3>Scoring engine design</h3>
+      <p>This runs 100% locally in JavaScript — no network calls, no API, no server. It's scoped to one job: parse plain text the way an ATS parser and a fast recruiter skim would, and return a single verdict. The engine:</p>
+      <ul>
+        <li><strong>A fixed scoring rubric.</strong> Five weighted checks — keyword match (40%), section structure (15%), contact info (10%), quantified achievements (15%), and formatting/parseability risk (20%) — combine into one 0–100 score, so results are consistent and explainable rather than a black box.</li>
+        <li><strong>Keyword extraction</strong> tokenizes the job description, strips common stopwords, and keeps meaningful terms (skills, tools, titles), then checks each against the resume text for a match/missing split.</li>
+        <li><strong>Structure detection</strong> uses header pattern matching (e.g. "Experience", "Education", "Skills" and common variants) to confirm the standard sections an ATS looks for are present and labeled.</li>
+        <li><strong>Quantified impact detection</strong> scans bullet-style lines for numbers, percentages, dollar amounts, and multipliers, since measurable outcomes are what separates a strong bullet from a vague duty statement.</li>
+        <li><strong>Edge-case handling</strong> — if the resume or job description is empty, too short, or clearly not resume/job content (or a PDF that read in as binary noise), the engine returns a validation message instead of a fabricated score.</li>
+        <li><strong>Tone lock</strong>: professional, direct, no fluff, no emoji, feedback framed as fixes not criticism.</li>
+      </ul>
+
+      <h3>Why the UI choices fit the use case</h3>
+      <p>The visual language is built around the actual mechanic of an ATS: a machine "scanning" a document. The scan-line sweep in the logo and the loading state, the monospace "data readout" typography for the score and keyword tags, and the dark, instrument-panel palette all come from that idea rather than a generic chat layout — because this tool's value is a verdict, not a conversation.</p>
+      <p>The score is a circular dial (glanceable, familiar from health/credit-score UIs) paired with a pass/borderline/fail badge, so the headline result is visible in under a second. Keyword matches render as small tags in two colors (found vs. missing) so users can see gaps against the job description at a glance, without reading paragraphs.</p>
+
+      <h3>Extending this engine</h3>
+      <ul>
+        <li><strong>Real AI scoring:</strong> swap the local heuristics for a Claude API call (via a backend that holds the key) for nuanced, context-aware feedback beyond pattern matching.</li>
+        <li><strong>Real PDF/DOCX parsing:</strong> add a library like pdf.js or mammoth.js so file upload works reliably instead of relying on pasted text or plain .txt.</li>
+        <li><strong>Memory:</strong> store past scans in localStorage so a user can track score improvement across resume versions.</li>
+        <li><strong>Tailoring:</strong> let users pick an industry or seniority level as a form field, and use it to weight which keywords/format norms matter most.</li>
+      </ul>
+    </div>
+  </div>
+
+  <footer>SCANLINE — built with a single Claude system prompt · no external libraries</footer>
+</div>
+
+<script>
+// --- Docs toggle ---
+const docsToggle = document.getElementById('docsToggle');
+const docsBody = document.getElementById('docsBody');
+docsToggle.addEventListener('click', () => {
+  docsToggle.classList.toggle('open');
+  docsBody.classList.toggle('open');
+  docsToggle.querySelector('span').textContent = docsToggle.classList.contains('open') ? '▾ How this was built' : '▸ How this was built';
+});
+
+// --- File upload (best-effort, .txt reliable; pdf/docx best-effort with warning) ---
+const fileBtn = document.getElementById('fileBtn');
+const fileInput = document.getElementById('fileInput');
+const fileName = document.getElementById('fileName');
+const fileHint = document.getElementById('fileHint');
+const resumeText = document.getElementById('resumeText');
+
+fileBtn.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', () => {
+  const f = fileInput.files[0];
+  if (!f) return;
+  fileName.textContent = f.name;
+  const isTxt = /\.txt$/i.test(f.name);
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    let text = e.target.result;
+    if (!isTxt) {
+      // best-effort: strip obviously non-text noise for pdf/docx binary reads
+      const printable = (text.match(/[\x20-\x7E\n]/g) || []).length;
+      const ratio = printable / Math.max(text.length, 1);
+      if (ratio < 0.85) {
+        fileHint.textContent = "That file didn't extract cleanly (PDF/DOCX binary format). Please copy-paste your resume text into the box instead for an accurate scan.";
+        fileHint.classList.add('warn');
+        return;
+      }
+    }
+    resumeText.value = text.trim();
+    fileHint.textContent = isTxt ? "Loaded from file." : "Extracted best-effort — double check the text below looks correct before scanning.";
+    fileHint.classList.toggle('warn', !isTxt);
+  };
+  reader.readAsText(f);
+});
+
+// --- Run scan ---
+const runBtn = document.getElementById('runBtn');
+const resultsArea = document.getElementById('resultsArea');
+const jobText = document.getElementById('jobText');
+
+function escapeHtml(s){
+  return (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function renderEmpty(){
+  resultsArea.innerHTML = `
+    <div class="results-empty">
+      <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="12" y2="15"/></svg>
+      <div class="t1">No scan run yet</div>
+      <div class="t2">Fill in your resume and the job description, then run the scan to see your ATS score and verdict.</div>
+    </div>`;
+}
+
+function renderLoading(){
+  resultsArea.innerHTML = `
+    <div class="scan-stage active">
+      <div class="scan-line"></div>
+      <div class="scan-label">SCANNING RESUME</div>
+      <div class="scan-sub">checking keywords · structure · parseability...</div>
+    </div>`;
+}
+
+function renderError(msg){
+  resultsArea.innerHTML = `
+    <div class="error-box">
+      <div class="et">Scan failed</div>
+      ${escapeHtml(msg)}
+    </div>`;
+}
+
+function renderResult(data){
+  if (data.error) {
+    resultsArea.innerHTML = `
+      <div class="error-box">
+        <div class="et">Can't scan this</div>
+        ${escapeHtml(data.error)}
+      </div>`;
+    return;
+  }
+
+  const score = Math.max(0, Math.min(100, data.score ?? 0));
+  const verdict = data.verdict || 'BORDERLINE';
+  const colors = {
+    PASS: 'var(--signal)',
+    BORDERLINE: 'var(--amber)',
+    FAIL: 'var(--red)'
+  };
+  const badgeBg = {
+    PASS: 'rgba(57,255,158,0.12)',
+    BORDERLINE: 'rgba(255,180,84,0.12)',
+    FAIL: 'rgba(255,92,92,0.12)'
+  };
+  const color = colors[verdict] || colors.BORDERLINE;
+  const bg = badgeBg[verdict] || badgeBg.BORDERLINE;
+
+  const r = 54, circ = 2 * Math.PI * r;
+  const offset = circ - (score/100) * circ;
+
+  const fixesHtml = (data.fixes || []).map((f,i) =>
+    `<li style="animation-delay:${i*0.06}s"><span class="marker">${String(i+1).padStart(2,'0')}</span><span>${escapeHtml(f)}</span></li>`
+  ).join('');
+
+  const matchedHtml = (data.matched_keywords || []).map(k => `<span class="kw found">✓ ${escapeHtml(k)}</span>`).join('');
+  const missingHtml = (data.missing_keywords || []).map(k => `<span class="kw missing">✕ ${escapeHtml(k)}</span>`).join('');
+
+  resultsArea.innerHTML = `
+    <div class="verdict-wrap">
+      <div class="dial">
+        <svg width="132" height="132" viewBox="0 0 132 132">
+          <circle class="dial-bg" cx="66" cy="66" r="${r}"></circle>
+          <circle class="dial-fg" cx="66" cy="66" r="${r}" stroke="${color}"
+            stroke-dasharray="${circ}" stroke-dashoffset="${circ}"></circle>
+        </svg>
+        <div class="dial-center">
+          <div class="dial-score" style="color:${color}">${score}</div>
+          <div class="dial-max">/ 100</div>
+        </div>
+      </div>
+      <div class="verdict-text">
+        <span class="verdict-badge" style="color:${color};background:${bg};border:1px solid ${color}">${escapeHtml(verdict)}</span>
+        <div class="verdict-summary">${escapeHtml(data.summary || '')}</div>
+      </div>
+    </div>
+
+    ${fixesHtml ? `<div class="section-title">Priority fixes</div><ul class="fix-list">${fixesHtml}</ul>` : ''}
+
+    ${(matchedHtml || missingHtml) ? `<div class="section-title">Keyword match vs. job description</div><div class="kw-wrap">${matchedHtml}${missingHtml}</div>` : ''}
+  `;
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      const dialFg = resultsArea.querySelector('.dial-fg');
+      if (dialFg) dialFg.style.strokeDashoffset = offset;
+    });
+  });
+}
+
+// =====================================================================
+// LOCAL ATS ANALYSIS ENGINE — fully offline, no network calls, no API.
+// =====================================================================
+
+const STOPWORDS = new Set(("a about above after again against all am an and any are aren't as at be because been "+
+"before being below between both but by can't cannot could couldn't did didn't do does doesn't doing don't down "+
+"during each few for from further had hadn't has hasn't have haven't having he he'd he'll he's her here here's hers "+
+"herself him himself his how how's i i'd i'll i'm i've if in into is isn't it it's its itself let's me more most "+
+"mustn't my myself no nor not of off on once only or other ought our ours ourselves out over own same shan't she "+
+"she'd she'll she's should shouldn't so some such than that that's the their theirs them themselves then there "+
+"there's these they they'd they'll they're they've this those through to too under until up very was wasn't we "+
+"we'd we'll we're we've were weren't what what's when when's where where's which while who who's whom why why's "+
+"with won't would wouldn't you you'd you'll you're you've your yours yourself yourselves will able etc using use "+
+"including required requirements preferred looking seeking role responsibilities experience years work team "+
+"strong ability skills across within also within must plus new").split(/\s+/));
+
+function tokenize(text){
+  return (text.toLowerCase().match(/[a-z0-9][a-z0-9+.#-]{1,}/g) || []);
+}
+
+function extractKeywords(jobText, maxKeywords){
+  const words = tokenize(jobText);
+  const freq = {};
+  words.forEach(w => {
+    if (STOPWORDS.has(w) || w.length < 3 || /^\d+$/.test(w)) return;
+    freq[w] = (freq[w] || 0) + 1;
+  });
+  return Object.keys(freq)
+    .sort((a,b) => freq[b]-freq[a])
+    .slice(0, maxKeywords);
+}
+
+function isGarbledText(text){
+  if (!text) return false;
+  const printable = (text.match(/[\x20-\x7E\n\r\t]/g) || []).length;
+  const ratio = printable / Math.max(text.length, 1);
+  const wordish = (text.match(/[a-zA-Z]{2,}/g) || []).length;
+  return ratio < 0.85 || wordish < 5;
+}
+
+function countWords(text){
+  return (text.trim().match(/\S+/g) || []).length;
+}
+
+function hasSectionHeader(text, patterns){
+  const lines = text.split(/\n/);
+  return lines.some(line => {
+    const clean = line.trim().toLowerCase().replace(/[^a-z& ]/g,'');
+    return patterns.some(p => clean === p || (clean.length < 40 && clean.includes(p)));
+  });
+}
+
+function detectContactInfo(text){
+  const email = /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/i.test(text);
+  const phone = /(\+?\d[\d\-\s().]{8,}\d)/.test(text);
+  const linkedin = /linkedin\.com/i.test(text);
+  let found = 0;
+  if (email) found++;
+  if (phone) found++;
+  if (linkedin) found++;
+  return { email, phone, linkedin, found };
+}
+
+function countQuantified(text){
+  const matches = text.match(/(\$\s?\d[\d,.]*\+?|(\d[\d,.]*)\s?%|\b\d+(\.\d+)?\s?(x|k|m|billion|million|thousand)\b|\b\d{2,}\+?\b)/gi);
+  return matches ? matches.length : 0;
+}
+
+function detectFormattingRisk(text){
+  let riskPoints = 0;
+  const flags = [];
+  if (/\t{2,}/.test(text)) { riskPoints += 1; flags.push('multiple tab characters (often from table/column layouts)'); }
+  if (/[|┃│▏▕]{2,}/.test(text)) { riskPoints += 1; flags.push('table/column divider characters'); }
+  if (/[\u25A0-\u25FF\u2600-\u27BF]/.test(text)) { riskPoints += 1; flags.push('decorative icons or symbols'); }
+  const lines = text.split('\n');
+  const veryLongLines = lines.filter(l => l.length > 300).length;
+  if (veryLongLines > 0) { riskPoints += 1; flags.push('very long unbroken lines'); }
+  const emptyRatio = lines.filter(l => l.trim() === '').length / Math.max(lines.length,1);
+  if (emptyRatio > 0.5) { riskPoints += 1; flags.push('excessive blank lines/spacing'); }
+  return { riskPoints, flags };
+}
+
+function analyzeResume(resume, job){
+  // ---- Validation ----
+  const resumeWordCount = countWords(resume);
+  const jobWordCount = countWords(job);
+
+  if (!resume || resumeWordCount < 40) {
+    return { error: "This doesn't look like resume content — paste your full resume text (at least a few sentences of experience)." };
+  }
+  if (isGarbledText(resume)) {
+    return { error: "This didn't extract as readable text — please paste your resume as plain text instead of uploading a PDF/DOCX." };
+  }
+  if (!job || jobWordCount < 15) {
+    return { error: "Add a job description so the scan can check your keyword match against it." };
+  }
+  if (isGarbledText(job)) {
+    return { error: "The job description didn't come through as readable text — please paste it as plain text." };
+  }
+
+  const resumeLower = resume.toLowerCase();
+
+  // ---- 1. Keyword match (40%) ----
+  const keywords = extractKeywords(job, 18);
+  const matched = [];
+  const missing = [];
+  keywords.forEach(k => {
+    const re = new RegExp('\\b' + k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + '\\b', 'i');
+    if (re.test(resumeLower)) matched.push(k); else missing.push(k);
+  });
+  const keywordScore = keywords.length ? (matched.length / keywords.length) * 40 : 30;
+
+  // ---- 2. Formatting / parseability risk (20%) ----
+  const { riskPoints, flags: riskFlags } = detectFormattingRisk(resume);
+  const formattingScore = Math.max(0, 20 - riskPoints * 4);
+
+  // ---- 3. Section structure (15%) ----
+  const hasExperience = hasSectionHeader(resume, ['experience','work experience','professional experience','employment history']);
+  const hasEducation = hasSectionHeader(resume, ['education','academic background']);
+  const hasSkills = hasSectionHeader(resume, ['skills','technical skills','core competencies','skills & tools']);
+  const sectionsFound = [hasExperience, hasEducation, hasSkills].filter(Boolean).length;
+  const structureScore = (sectionsFound / 3) * 15;
+
+  // ---- 4. Quantified impact (15%) ----
+  const quantCount = countQuantified(resume);
+  const quantScore = Math.min(15, quantCount * 1.5);
+
+  // ---- 5. Contact info (10%) ----
+  const contact = detectContactInfo(resume);
+  const contactScore = (contact.found / 3) * 10;
+
+  const rawScore = keywordScore + formattingScore + structureScore + quantScore + contactScore;
+  const score = Math.round(Math.max(0, Math.min(100, rawScore)));
+
+  let verdict = 'FAIL';
+  if (score >= 80) verdict = 'PASS';
+  else if (score >= 55) verdict = 'BORDERLINE';
+
+  // ---- Summary ----
+  let summary;
+  if (verdict === 'PASS') {
+    summary = `Your resume matches ${matched.length} of ${keywords.length} key terms from this job description and hits the standard ATS structure checks. It's in strong shape to clear automated screening and reach a recruiter.`;
+  } else if (verdict === 'BORDERLINE') {
+    summary = `Your resume will likely parse through most ATS systems, but it's only matching ${matched.length} of ${keywords.length} key terms from this job description and has some structural gaps holding your ranking down.`;
+  } else {
+    summary = `Your resume is at high risk of being filtered out or ranked poorly — it matches just ${matched.length} of ${keywords.length} key terms from this job description, and has notable structure or formatting gaps.`;
+  }
+
+  // ---- Fixes (ordered by impact) ----
+  const fixes = [];
+  if (missing.length > 0) {
+    fixes.push(`Work these missing terms into your resume where truthful: ${missing.slice(0,6).join(', ')}.`);
+  }
+  if (!hasExperience) fixes.push('Add a clearly labeled "Experience" section header — ATS parsers look for this exact kind of label to segment your work history.');
+  if (!hasEducation) fixes.push('Add a clearly labeled "Education" section so your degree/credentials are parsed correctly.');
+  if (!hasSkills) fixes.push('Add a dedicated "Skills" section listing tools and technologies — this is one of the fastest ways to raise keyword match.');
+  if (quantCount < 4) fixes.push('Add more measurable outcomes to your bullet points (numbers, %, $, team size) — quantified impact is a major signal of a strong resume.');
+  if (contact.found < 2) fixes.push('Make sure your email and phone number are in plain text near the top — contact info inside images or headers/footers often fails to parse.');
+  if (riskFlags.length > 0) fixes.push(`Simplify formatting: ${riskFlags[0]} can break ATS parsing — use a single-column, plain-text-friendly layout.`);
+  if (fixes.length === 0) fixes.push('Your resume covers the core bases well — focus on tightening bullet points to lead with outcomes rather than duties.');
+
+  return {
+    error: null,
+    score,
+    verdict,
+    summary,
+    fixes: fixes.slice(0,6),
+    matched_keywords: matched,
+    missing_keywords: missing
+  };
+}
+
+function runScan(){
+  const resume = resumeText.value.trim();
+  const job = jobText.value.trim();
+
+  if (!resume && !job) {
+    renderError('Paste your resume text and the job description first.');
+    return;
+  }
+
+  runBtn.disabled = true;
+  runBtn.textContent = 'Scanning...';
+  renderLoading();
+
+  // Simulate a brief scan pass so the scan-line animation reads as doing real work.
+  setTimeout(() => {
+    try {
+      const result = analyzeResume(resume, job);
+      renderResult(result);
+    } finally {
+      runBtn.disabled = false;
+      runBtn.textContent = 'Run ATS Scan →';
+    }
+  }, 1400);
+}
+
+runBtn.addEventListener('click', runScan);
+</script>
+</body>
+</html>
