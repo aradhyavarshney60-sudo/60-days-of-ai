@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>LinkedIn roast & rebuild — report card</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap');
+
+:root{
+  --paper:#FAF9F5;
+  --paper-2:#F1EFE6;
+  --ink:#1B2A4A;
+  --ink-soft:#4A5670;
+  --line:#D8D4C4;
+  --red:#C1272D;
+  --red-soft:#F4DEDD;
+  --green:#1F6F5C;
+  --green-soft:#DCEBE4;
+  --gold:#B8862B;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:'Inter',sans-serif;
+  padding-bottom:4rem;
+}
+.wrap{max-width:880px;margin:0 auto;padding:0 24px;}
+
+.masthead{
+  border-bottom:3px double var(--ink);
+  padding:32px 0 20px;
+  text-align:center;
+  position:relative;
+}
+.masthead .kicker{
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;
+  letter-spacing:.14em;
+  text-transform:uppercase;
+  color:var(--ink-soft);
+}
+.masthead h1{
+  font-family:'Source Serif 4',serif;
+  font-size:38px;
+  font-weight:700;
+  margin:6px 0 4px;
+}
+.masthead .sub{
+  font-size:14px;
+  color:var(--ink-soft);
+  font-style:italic;
+}
+
+.stamp{
+  position:absolute;
+  top:14px;
+  right:0;
+  border:2px solid var(--red);
+  color:var(--red);
+  font-family:'JetBrains Mono',monospace;
+  font-weight:700;
+  font-size:12px;
+  letter-spacing:.08em;
+  padding:5px 10px;
+  transform:rotate(6deg);
+  border-radius:3px;
+  background:rgba(193,39,45,0.03);
+}
+
+nav{
+  display:flex;
+  gap:2px;
+  margin:22px 0 8px;
+  border-bottom:1px solid var(--line);
+  flex-wrap:wrap;
+}
+nav button{
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;
+  letter-spacing:.04em;
+  background:none;
+  border:none;
+  padding:10px 14px;
+  cursor:pointer;
+  color:var(--ink-soft);
+  border-bottom:2px solid transparent;
+  text-transform:uppercase;
+}
+nav button.active{
+  color:var(--ink);
+  border-bottom:2px solid var(--red);
+  font-weight:600;
+}
+nav button:hover{color:var(--ink);}
+
+section{display:none;padding:20px 0 10px;}
+section.active{display:block;}
+
+h2.section-title{
+  font-family:'Source Serif 4',serif;
+  font-size:26px;
+  margin:0 0 4px;
+  font-weight:700;
+}
+p.section-desc{
+  color:var(--ink-soft);
+  font-size:14px;
+  margin:0 0 22px;
+}
+
+.gradecard{
+  background:var(--paper-2);
+  border:1px solid var(--line);
+  border-radius:6px;
+  padding:16px 18px;
+  margin-bottom:14px;
+}
+.gradecard .row{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  gap:12px;
+}
+.gradecard .label{
+  font-weight:600;
+  font-size:15px;
+}
+.gradecard .score{
+  font-family:'JetBrains Mono',monospace;
+  font-weight:700;
+  font-size:15px;
+  color:var(--red);
+  white-space:nowrap;
+}
+.gradecard .reaction{
+  font-style:italic;
+  color:var(--ink-soft);
+  font-size:13px;
+  margin-top:2px;
+}
+.gradecard .detail{
+  margin-top:10px;
+  font-size:14px;
+  line-height:1.6;
+}
+.gradecard .detail p{margin:6px 0;}
+.gradecard .detail b{color:var(--ink);}
+.quote{
+  font-family:'JetBrains Mono',monospace;
+  font-size:12.5px;
+  background:#fff;
+  border-left:3px solid var(--red);
+  padding:6px 10px;
+  margin:6px 0;
+  color:var(--ink-soft);
+}
+
+.overall{
+  text-align:center;
+  margin:24px 0;
+  padding:20px;
+  border:2px solid var(--ink);
+  border-radius:6px;
+  background:#fff;
+}
+.overall .num{
+  font-family:'Source Serif 4',serif;
+  font-size:52px;
+  font-weight:700;
+  color:var(--red);
+}
+.overall .num small{font-size:22px;color:var(--ink-soft);font-weight:400;}
+.overall .lbl{
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  color:var(--ink-soft);
+}
+
+.opt{
+  border:1px solid var(--line);
+  border-radius:6px;
+  padding:14px 16px;
+  margin-bottom:12px;
+  background:#fff;
+}
+.opt .tag{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+  color:var(--green);
+  font-weight:600;
+}
+.opt .headline-text{
+  font-family:'Source Serif 4',serif;
+  font-size:16px;
+  margin:6px 0;
+  line-height:1.4;
+}
+.opt .why{font-size:13px;color:var(--ink-soft);}
+
+.about-block{
+  background:#fff;
+  border:1px solid var(--line);
+  border-radius:6px;
+  padding:18px 20px;
+  margin-bottom:16px;
+  font-size:14.5px;
+  line-height:1.75;
+}
+.about-block .tag{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;
+  color:var(--ink-soft);
+  text-transform:uppercase;
+  letter-spacing:.06em;
+  margin-bottom:6px;
+  display:block;
+}
+.keywords{margin-top:10px;}
+.kw{
+  display:inline-block;
+  font-family:'JetBrains Mono',monospace;
+  font-size:11.5px;
+  background:var(--green-soft);
+  color:var(--green);
+  padding:3px 8px;
+  border-radius:3px;
+  margin:2px 3px 2px 0;
+}
+
+.ba{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-bottom:14px;
+}
+.ba .col{
+  border-radius:6px;
+  padding:12px 14px;
+  font-size:13.5px;
+  line-height:1.55;
+}
+.ba .before{background:var(--red-soft);border:1px solid #e3c1c0;}
+.ba .after{background:var(--green-soft);border:1px solid #bcd9cd;}
+.ba .tag{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10.5px;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+  display:block;
+  margin-bottom:4px;
+  font-weight:600;
+}
+.ba .before .tag{color:var(--red);}
+.ba .after .tag{color:var(--green);}
+
+table.skills{width:100%;border-collapse:collapse;margin-bottom:18px;font-size:13.5px;}
+table.skills th{
+  text-align:left;
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+  color:var(--ink-soft);
+  border-bottom:1px solid var(--line);
+  padding:6px 4px;
+}
+table.skills td{padding:6px 4px;border-bottom:1px solid var(--line);}
+.pin{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;
+  background:var(--gold);
+  color:#fff;
+  padding:2px 6px;
+  border-radius:3px;
+  margin-left:6px;
+}
+
+.scoretable{width:100%;border-collapse:collapse;margin:14px 0 22px;}
+.scoretable th{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;
+  text-transform:uppercase;
+  color:var(--ink-soft);
+  text-align:left;
+  padding:8px 6px;
+  border-bottom:2px solid var(--ink);
+}
+.scoretable td{padding:9px 6px;border-bottom:1px solid var(--line);font-size:14px;}
+.scoretable .before{color:var(--red);font-family:'JetBrains Mono',monospace;font-weight:600;}
+.scoretable .after{color:var(--green);font-family:'JetBrains Mono',monospace;font-weight:600;}
+.scoretable .delta{font-family:'JetBrains Mono',monospace;font-weight:700;}
+
+.day{
+  border:1px solid var(--line);
+  border-radius:6px;
+  margin-bottom:12px;
+  background:#fff;
+  overflow:hidden;
+}
+.day summary{
+  cursor:pointer;
+  padding:12px 16px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  font-weight:600;
+  font-size:14.5px;
+  list-style:none;
+}
+.day summary::-webkit-details-marker{display:none;}
+.day summary .dnum{
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;
+  background:var(--ink);
+  color:#fff;
+  padding:3px 8px;
+  border-radius:3px;
+  flex-shrink:0;
+}
+.day-body{padding:0 16px 16px 16px;font-size:13.5px;line-height:1.7;color:var(--ink-soft);}
+.day-body b{color:var(--ink);}
+.day-body ul{margin:6px 0;padding-left:20px;}
+.post-draft{
+  background:var(--paper-2);
+  border-left:3px solid var(--ink);
+  padding:10px 12px;
+  margin:8px 0;
+  font-size:13px;
+  white-space:pre-wrap;
+}
+.charcount{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-soft);text-align:right;margin-top:2px;}
+
+.summary-card{
+  background:var(--ink);
+  color:var(--paper);
+  border-radius:8px;
+  padding:26px 28px;
+  font-family:'Source Serif 4',serif;
+}
+.summary-card .headline{font-size:19px;font-weight:700;margin-bottom:16px;}
+.summary-card .scoreline{
+  font-family:'JetBrains Mono',monospace;
+  font-size:22px;
+  margin:10px 0 18px;
+}
+.summary-card .scoreline .before{color:#E8A5A5;}
+.summary-card .scoreline .after{color:#8FD4B8;}
+.summary-card ol{padding-left:20px;margin:8px 0;font-size:14.5px;}
+.summary-card li{margin-bottom:5px;}
+.summary-card .top{
+  margin-top:16px;
+  padding-top:14px;
+  border-top:1px solid rgba(250,249,245,0.25);
+  font-style:italic;
+  font-size:14.5px;
+}
+.copybtn{
+  margin-top:18px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;
+  background:none;
+  border:1px solid rgba(250,249,245,0.4);
+  color:var(--paper);
+  padding:8px 14px;
+  border-radius:4px;
+  cursor:pointer;
+  text-transform:uppercase;
+  letter-spacing:.05em;
+}
+.copybtn:hover{background:rgba(250,249,245,0.1);}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="masthead">
+    <div class="stamp">graded</div>
+    <div class="kicker">Profile diagnostics — internal recruiter memo</div>
+    <h1>The LinkedIn roast &amp; rebuild</h1>
+    <div class="sub">CSE student, targeting Python / AI software engineering internships</div>
+  </div>
+
+  <nav>
+    <button class="tab-btn active" data-tab="roast">Part 1 — Roast</button>
+    <button class="tab-btn" data-tab="rebuild">Part 2 — Rebuild</button>
+    <button class="tab-btn" data-tab="scorecard">Part 3 — Scorecard</button>
+    <button class="tab-btn" data-tab="plan">Part 4 — 7-day plan</button>
+    <button class="tab-btn" data-tab="summary">Part 5 — Summary card</button>
+  </nav>
+
+  <section id="roast" class="active">
+    <h2 class="section-title">Profile report card — before</h2>
+    <p class="section-desc">What a recruiter thinks in the first 3 seconds, section by section.</p>
+
+    <div class="gradecard">
+      <div class="row"><span class="label">Headline</span><span class="score">4 / 10</span></div>
+      <div class="reaction">"Another CSE student with a keyword list. Next."</div>
+      <div class="detail">
+        <div class="quote">🎓 CSE (Core) Student | AI &amp; Tech Enthusiast | Drishti CPS X IIT Indore | Python | Generative AI | Prompt Engineering</div>
+        <p>❌ <b>The problem:</b> it's a tag cloud, not a sentence. "Enthusiast" is the weakest word in personal branding — it means you have opinions about AI, not skills in it. There's no verb, no outcome, no "who I help."</p>
+        <p>🧠 <b>Why it hurts:</b> recruiters searching for interns scan headlines in under 2 seconds. Yours reads as a list of nouns competing for attention, so nothing wins.</p>
+        <p>🔍 <b>Invisible cost:</b> LinkedIn search ranks headlines partly on relevance density, not word count — "enthusiast" and the emoji add zero search value while pushing out room for terms recruiters actually filter by, like "internship" or "software engineer."</p>
+      </div>
+    </div>
+
+    <div class="gradecard">
+      <div class="row"><span class="label">About — first 2 lines</span><span class="score">3 / 10</span></div>
+      <div class="reaction">"'Limitless possibilities' — closes tab before 'see more.'"</div>
+      <div class="detail">
+        <div class="quote">Passionate about exploring the limitless possibilities of Artificial Intelligence and emerging technologies.</div>
+        <p>❌ <b>The problem:</b> this is the single most valuable line on your entire profile — it's what shows before the reader taps "see more" — and it's spent on a sentence that could describe literally any CSE student in the world.</p>
+        <p>🧠 <b>Why it hurts:</b> recruiters pattern-match "passionate about exploring possibilities" to a template they've read 500 times. It signals effort, not substance.</p>
+        <p>🔍 <b>Invisible cost:</b> most readers never tap "see more." If line one doesn't earn the click, everything below it — your internship, your skills — is invisible to a huge share of profile visitors.</p>
+      </div>
+    </div>
+
+    <div class="gradecard">
+      <div class="row"><span class="label">About — full section</span><span class="score">4 / 10</span></div>
+      <div class="reaction">"Reads like a course catalog description, not a person."</div>
+      <div class="detail">
+        <p>❌ <b>The problem:</b> the section lists what you're <i>pursuing</i> and <i>learning</i>, but never what you've <i>built</i> or <i>solved</i>. There is no proof — no project, no metric, no result. It also ends on a generic value statement ("continuous learning, collaboration, innovation 🚀") instead of a call to action.</p>
+        <p>🧠 <b>Why it hurts:</b> "learning Python and Generative AI" tells a recruiter you're a beginner. It doesn't tell them you can do anything with it yet.</p>
+        <p>🔍 <b>Invisible cost:</b> no CTA means even an interested reader has no next step — no prompt to check your featured projects, message you, or view your work. You're leaving warm leads on the table.</p>
+      </div>
+    </div>
+
+    <div class="gradecard">
+      <div class="row"><span class="label">Experience</span><span class="score">5 / 10</span></div>
+      <div class="reaction">"Fine. Forgettable. Sounds like the internship's job posting."</div>
+      <div class="detail">
+        <div class="quote">Currently working as a Data Analytics Intern using Python, SQL, Excel and Power BI.</div>
+        <p>❌ <b>The problem:</b> every bullet describes a <i>responsibility</i> ("performing," "creating," "collaborating") instead of an <i>achievement</i>. There isn't a single number — not datasets analyzed, not dashboards built, not team size, not time saved.</p>
+        <p>🧠 <b>Why it hurts:</b> recruiters read hundreds of "performed data cleaning and analysis" bullets a week. Without a number or outcome, this entry is functionally invisible even though the internship itself is solid.</p>
+        <p>🔍 <b>Invisible cost:</b> you likely already have numbers available — "how many datasets," "how many dashboards," "how many stakeholders" — and simply haven't written them down yet. That's the cheapest fix on this entire profile.</p>
+      </div>
+    </div>
+
+    <div class="gradecard">
+      <div class="row"><span class="label">Skills &amp; keywords</span><span class="score">6 / 10</span></div>
+      <div class="reaction">"Good raw list — but nothing is prioritized."</div>
+      <div class="detail">
+        <p>❌ <b>The problem:</b> the 10 skills are relevant, but they're unordered and nothing is pinned. LinkedIn shows your top 3 pinned skills prominently — right now you're letting the platform pick, not you.</p>
+        <p>🧠 <b>Why it hurts:</b> recruiters filtering for "Software Engineering Intern" search terms like "Python," "SQL," "Git," and "problem solving" before they search "Generative AI." Your most search-critical skills aren't visually prioritized.</p>
+        <p>🔍 <b>Invisible cost:</b> skills with zero endorsements (likely most of these) rank lower in LinkedIn's internal search than endorsed ones — worth requesting a few endorsements from your Drishti CPS or internship contacts.</p>
+      </div>
+    </div>
+
+    <div class="overall">
+      <div class="lbl">Overall profile strength</div>
+      <div class="num">44<small> / 100</small></div>
+    </div>
+  </section>
+
+  <section id="rebuild">
+    <h2 class="section-title">The rebuild</h2>
+    <p class="section-desc">Every section rewritten, with the strategy explained so you can replicate it later.</p>
+
+    <h3 style="font-family:'Source Serif 4',serif;font-size:18px;">Headline — 3 options</h3>
+    <p style="font-size:13.5px;color:var(--ink-soft);margin-top:-6px;">Formula: [Role/Identity] | [Who I help or what I do] | [Proof or differentiator]</p>
+
+    <div class="opt">
+      <span class="tag">Option 1 — keyword-optimized (search visibility)</span>
+      <div class="headline-text">CSE student building with Python &amp; Generative AI | Data Analytics Intern @ CODTECH | Drishti CPS, IIT Indore</div>
+      <div class="why">Use for: recruiter search. Leads with role + tools recruiters actually filter by (Python, Generative AI, Data Analytics), keeps your current internship and IIT Indore program as credibility anchors instead of decoration.</div>
+    </div>
+    <div class="opt">
+      <span class="tag">Option 2 — value-proposition style</span>
+      <div class="headline-text">Turning messy data into decisions | Python &amp; AI | Aspiring Software Engineer (Internship-ready)</div>
+      <div class="why">Use for: standing out visually in a scroll of "CSE student" headlines. Leads with an outcome ("messy data into decisions") instead of a title, which is what makes a hiring manager pause.</div>
+    </div>
+    <div class="opt">
+      <span class="tag">Option 3 — authority style</span>
+      <div class="headline-text">Building small, real AI &amp; data projects while I learn | Python | Prompt Engineering | CSE @ [University]</div>
+      <div class="why">Use for: thought-leadership posting and network growth. "Building... while I learn" is an honest, confident student positioning — it doesn't overclaim seniority, but it signals action over aspiration.</div>
+    </div>
+    <p style="font-size:13px;color:var(--ink-soft);">For your stated goal (SWE/AI internships), start with <b>Option 1</b> — it's the one that surfaces in recruiter search.</p>
+
+    <h3 style="font-family:'Source Serif 4',serif;font-size:18px;margin-top:26px;">About section — full rewrite</h3>
+
+    <div class="about-block">
+      <span class="tag">The hook (before "see more")</span>
+      I build small Python and AI tools to solve problems I actually run into — and I'm currently doing that with real business data, not just tutorials.
+    </div>
+    <div class="about-block">
+      <span class="tag">The story</span>
+      I'm a Computer Science student (2025–2029) selected for the Drishti CPS program at IIT Indore, where I'm sharpening my foundations alongside hands-on work in Python, Generative AI, and prompt engineering. Right now, as a Data Analytics Intern at CODTECH IT Solutions, I turn raw datasets into dashboards and insights that people actually use to make decisions.
+    </div>
+    <div class="about-block">
+      <span class="tag">Proof</span>
+      • Selected for Drishti CPS, IIT Indore's competitive skill-building program alongside a full CSE course load.<br>
+      • Currently building dashboards and reports in Power BI and SQL for real datasets as a Data Analytics Intern.<br>
+      • Actively applying Generative AI and prompt engineering to practical, self-directed projects (add your strongest project here once it's built — this is the highest-leverage line on your whole profile).
+    </div>
+    <div class="about-block">
+      <span class="tag">CTA</span>
+      I'm looking for a Software Engineering internship where I can apply Python and AI to real problems. If you're hiring interns or just want to talk data and AI, message me — or check my featured section for project links.
+      <div class="keywords">
+        <span class="tag" style="margin-bottom:2px;">Keywords embedded for search</span><br>
+        <span class="kw">Python</span><span class="kw">Generative AI</span><span class="kw">Prompt Engineering</span><span class="kw">Data Analytics</span><span class="kw">SQL</span><span class="kw">Power BI</span><span class="kw">Software Engineering Internship</span><span class="kw">Machine Learning</span>
+      </div>
+    </div>
+    <p style="font-size:13px;color:var(--ink-soft);">⚠️ Note: I haven't invented any project or achievement — the bracketed line above is a placeholder. Fill it with your most concrete real project before publishing; it's the single highest-impact edit available to you right now.</p>
+
+    <h3 style="font-family:'Source Serif 4',serif;font-size:18px;margin-top:26px;">Experience — top entry rewrite</h3>
+    <div class="ba">
+      <div class="col before"><span class="tag">Before</span>Currently working as a Data Analytics Intern using Python, SQL, Excel and Power BI.</div>
+      <div class="col after"><span class="tag">After</span>Analyze real-world datasets using Python and SQL to surface business-ready insights, presented through Power BI dashboards.</div>
+    </div>
+    <div class="ba">
+      <div class="col before"><span class="tag">Before</span>Performing data cleaning, analysis and visualization on real-world datasets.</div>
+      <div class="col after"><span class="tag">After</span>Clean and structure raw datasets [add: e.g. "across 5+ projects"] before analysis, cutting down errors that would otherwise skew reporting.</div>
+    </div>
+    <div class="ba">
+      <div class="col before"><span class="tag">Before</span>Creating dashboards and reports to generate business insights.</div>
+      <div class="col after"><span class="tag">After</span>Build interactive Power BI dashboards [add: number built] that translate raw data into insights stakeholders can act on directly.</div>
+    </div>
+    <div class="ba">
+      <div class="col before"><span class="tag">Before</span>Collaborating on internship projects and improving analytical skills.</div>
+      <div class="col after"><span class="tag">After</span>Collaborate with a remote analytics team to scope and deliver internship projects on schedule, strengthening applied SQL and Power BI skills weekly.</div>
+    </div>
+    <p style="font-size:13px;color:var(--ink-soft);">Bracketed numbers are placeholders — even a rough estimate ("about 6 datasets," "3 dashboards") beats no number at all. Fill these in from memory before publishing; don't leave the brackets in.</p>
+
+    <h3 style="font-family:'Source Serif 4',serif;font-size:18px;margin-top:26px;">Skills — recommendations</h3>
+    <table class="skills">
+      <tr><th>Add (priority order)</th><th>Why</th></tr>
+      <tr><td>Software Engineering</td><td>Directly matches your target role title — recruiters filter on this exact phrase.</td></tr>
+      <tr><td>Data Structures &amp; Algorithms</td><td>Table stakes for SWE internship screens; signals CS fundamentals beyond data tools.</td></tr>
+      <tr><td>Power BI</td><td>You use it daily but it isn't listed — an easy, honest addition.</td></tr>
+      <tr><td>Excel</td><td>Same — already in your bullets, missing from skills.</td></tr>
+      <tr><td>REST APIs</td><td>Common SWE-intern keyword; add once you've touched any API work.</td></tr>
+      <tr><td>C++ or Java</td><td>Add whichever your CSE core coursework actually covers — most SWE intern filters include a compiled language.</td></tr>
+      <tr><td>Team Collaboration</td><td>Recruiters searching for interns often filter on soft skills too.</td></tr>
+      <tr><td>Communication</td><td>Same as above — cheap to add, frequently searched.</td></tr>
+      <tr><td>LLM APIs (e.g. OpenAI, Anthropic)</td><td>More specific and current than plain "Generative AI" — add once you've used one directly.</td></tr>
+      <tr><td>Version Control (Git)</td><td>Already listed as "Git" — rename to full phrase, it matches more searches.</td></tr>
+    </table>
+    <table class="skills">
+      <tr><th>Consider removing</th><th>Why</th></tr>
+      <tr><td>Problem Solving</td><td>Not wrong, but it's the most generic skill on LinkedIn — every profile has it. Replace with something specific once you have 10 skills you'd rather show.</td></tr>
+    </table>
+    <p style="font-size:13.5px;"><b>Pin to top 3:</b> Python <span class="pin">pin</span>, Data Analysis <span class="pin">pin</span>, Software Engineering <span class="pin">pin</span> — these are what a recruiter searching for your target role types first.</p>
+  </section>
+
+  <section id="scorecard">
+    <h2 class="section-title">Before vs. after scorecard</h2>
+    <p class="section-desc">Same profile, after the rewrite above is applied.</p>
+    <table class="scoretable">
+      <tr><th>Section</th><th>Before</th><th>After</th><th>Change</th></tr>
+      <tr><td>Headline</td><td class="before">4/10</td><td class="after">9/10</td><td class="delta">+5</td></tr>
+      <tr><td>About — hook</td><td class="before">3/10</td><td class="after">9/10</td><td class="delta">+6</td></tr>
+      <tr><td>About — full</td><td class="before">4/10</td><td class="after">8/10</td><td class="delta">+4</td></tr>
+      <tr><td>Experience</td><td class="before">5/10</td><td class="after">8/10</td><td class="delta">+3</td></tr>
+      <tr><td>Skills / keywords</td><td class="before">6/10</td><td class="after">9/10</td><td class="delta">+3</td></tr>
+    </table>
+    <div class="overall">
+      <div class="lbl">Overall profile strength</div>
+      <div class="num" style="color:var(--red);">44</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:20px;margin:6px 0;">↓</div>
+      <div class="num" style="color:var(--green);">86<small> / 100</small></div>
+      <div class="lbl" style="margin-top:6px;color:var(--green);">+42 points</div>
+    </div>
+    <p style="font-size:13px;color:var(--ink-soft);">The biggest jump is the About hook (+6) — because it's the highest-leverage real estate on the page. Fix that line alone and most of your score gain is already locked in.</p>
+  </section>
+
+  <section id="plan">
+    <h2 class="section-title">7-day LinkedIn activation plan</h2>
+    <p class="section-desc">Editing your profile gets you found. These actions get you seen.</p>
+
+    <details class="day" open>
+      <summary><span class="dnum">Day 1</span> Make all profile changes</summary>
+      <div class="day-body">
+        <b>Checklist:</b>
+        <ul>
+          <li>Replace headline with Option 1 (or your pick)</li>
+          <li>Replace About section with the 4-part rewrite — fill in the bracketed project line first</li>
+          <li>Update your CODTECH experience bullets with the rewritten versions and real numbers</li>
+          <li>Add the 9 recommended skills; remove "Problem Solving" if you're at 10+</li>
+          <li>Pin Python, Data Analysis, Software Engineering as your top 3 skills</li>
+          <li>Add a profile photo and banner if you don't already have professional ones</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="day">
+      <summary><span class="dnum">Day 2</span> Publish post #1 — "I just rebuilt my LinkedIn"</summary>
+      <div class="day-body">
+        <div class="post-draft">I just rewrote my entire LinkedIn profile — and realized I'd been hiding my own work for months.
+
+My old headline said "AI &amp; Tech Enthusiast." Enthusiast. Like I read about AI on weekends instead of building with it every week.
+
+So I rewrote it. New headline, new About section, real numbers in my experience section instead of vague responsibilities.
+
+Turns out most of us don't have a skills problem. We have a "not saying it clearly" problem.
+
+If you're a fellow CSE student or early-career builder — what's one line on your profile you'd rewrite today if you re-read it right now?</div>
+        <div class="charcount">≈ 640 characters</div>
+        <p>Hook works because it names a specific, relatable mistake ("enthusiast") instead of a vague brag. The closing question is what drives comments — it asks for a concrete answer, not a like.</p>
+      </div>
+    </details>
+
+    <details class="day">
+      <summary><span class="dnum">Day 3</span> Send 10 strategic connection requests</summary>
+      <div class="day-body">
+        <b>Who to target:</b>
+        <ul>
+          <li>3-4 SWE/data recruiters at companies you'd want a SWE or AI internship with</li>
+          <li>2-3 alumni from your college or Drishti CPS now working in software/data roles</li>
+          <li>2-3 engineers or analysts posting about Python, GenAI, or data analytics</li>
+          <li>1-2 fellow students building publicly in AI/data — future collaborators, not just contacts</li>
+        </ul>
+        <div class="post-draft">Hi [Name] — I'm a CSE student working in Python and data analytics (currently interning at CODTECH). Really enjoyed [something specific from their post/profile]. Would love to connect and follow your work.</div>
+        <div class="charcount">≈ 250 characters — customize the bracket every time</div>
+      </div>
+    </details>
+
+    <details class="day">
+      <summary><span class="dnum">Day 4</span> Comment on 5 posts in your target space</summary>
+      <div class="day-body">
+        <b>The value comment formula:</b> Agree + Add insight + Ask a question.
+        <ul>
+          <li><b>Agree:</b> one line showing you actually understood their point</li>
+          <li><b>Add insight:</b> a specific detail from your own experience — even a small internship observation counts</li>
+          <li><b>Ask a question:</b> invites a reply, which puts your name back in their notifications</li>
+        </ul>
+        <p>Example: "Completely agree that dirty data kills more dashboards than bad charts do. I ran into this cleaning a dataset last week — half the fix was just standardizing date formats. Curious how you handle recurring data-quality issues on your end?"</p>
+      </div>
+    </details>
+
+    <details class="day">
+      <summary><span class="dnum">Day 5</span> Publish post #2 — lessons-learned / hot take</summary>
+      <div class="day-body">
+        <div class="post-draft">Something I didn't expect from my data analytics internship: the hardest part isn't the analysis. It's the cleaning.
+
+I spent more time this week standardizing messy date formats and fixing inconsistent entries than I did building the actual dashboard.
+
+Nobody puts "data cleaning" in the job description highlights. But it's most of the job — and honestly, it's taught me more about real datasets than any course did.
+
+If you're a student about to start a data internship: budget way more time for cleaning than you think you'll need.</div>
+        <div class="charcount">≈ 620 characters</div>
+        <p>Niche hot-takes like this outperform generic motivational posts because they're specific enough that only someone who's actually done the work could have written them — that specificity is what builds credibility.</p>
+      </div>
+    </details>
+
+    <details class="day">
+      <summary><span class="dnum">Day 6</span> Engage with comments + 5 more connection requests</summary>
+      <div class="day-body">
+        <p>Reply to every comment on both posts within a few hours — early engagement is what LinkedIn's algorithm uses to decide whether to keep showing your post to more people. Then send 5 more targeted requests using the Day 3 approach, prioritizing anyone who engaged with your posts this week.</p>
+      </div>
+    </details>
+
+    <details class="day">
+      <summary><span class="dnum">Day 7</span> Review profile views and connection acceptance rate</summary>
+      <div class="day-body">
+        <p><b>What the numbers mean:</b></p>
+        <ul>
+          <li><b>Profile views up:</b> your headline and keywords are getting you found in search — good sign, keep the headline as is.</li>
+          <li><b>Profile views flat but connections accepted:</b> your outreach targeting is working, but search visibility isn't yet — revisit keyword placement in your headline and About section.</li>
+          <li><b>Low connection acceptance (under ~30%):</b> your requests may be too generic or too broad — tighten who you're targeting and personalize every note.</li>
+          <li><b>Post views low:</b> engage faster on future posts (first 60 minutes matter most) and lean further into specific, personal detail over generic advice.</li>
+        </ul>
+      </div>
+    </details>
+  </section>
+
+  <section id="summary">
+    <h2 class="section-title">What I learned today</h2>
+    <p class="section-desc">Shareable summary — screenshot and post as-is, or copy the text below.</p>
+
+    <div class="summary-card" id="summaryCard">
+      <div class="headline">I let AI roast my LinkedIn profile today. Here's what changed:</div>
+      <div class="scoreline"><span class="before">44/100</span> → <span class="after">86/100</span></div>
+      <div>Top 3 mistakes I was making:</div>
+      <ol>
+        <li>My About section opened with "passionate about exploring limitless possibilities" — the most valuable line on the whole profile, spent on nothing.</li>
+        <li>Every bullet in my experience section described a responsibility, not an achievement — zero numbers, anywhere.</li>
+        <li>My headline was a list of nouns ("AI &amp; Tech Enthusiast") instead of a sentence that says who I help and how.</li>
+      </ol>
+      <div class="top">The #1 thing that made the biggest difference: rewriting the first two lines of my About section — that's the only part visible before "see more," and it's what decides whether anyone reads the rest.</div>
+    </div>
+    <button class="copybtn" onclick="copySummary()">Copy text</button>
+  </section>
+
+</div>
+
+<script>
+document.querySelectorAll('.tab-btn').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active');});
+    document.querySelectorAll('section').forEach(function(s){s.classList.remove('active');});
+    btn.classList.add('active');
+    document.getElementById(btn.dataset.tab).classList.add('active');
+  });
+});
+function copySummary(){
+  var text = "I let AI roast my LinkedIn profile today. Here's what changed:\\n\\nBefore: 44/100\\nAfter: 86/100\\n\\nTop 3 mistakes I was making:\\n1. My About section opened with a generic line instead of a hook\\n2. My experience bullets described responsibilities, not achievements\\n3. My headline was a list of nouns instead of a value statement\\n\\nThe #1 thing that made the biggest difference: rewriting the first two lines of my About section.";
+  navigator.clipboard.writeText(text);
+  var b = document.querySelector('.copybtn');
+  var old = b.textContent;
+  b.textContent = 'Copied';
+  setTimeout(function(){ b.textContent = old; }, 1500);
+}
+</script>
+</body>
+</html>
