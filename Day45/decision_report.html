@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Decision Report</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg-main:#0f0f14; --bg-card:#1a1a24; --bg-card-alt:#1e1e2e;
+  --text-primary:#f0f0f5; --text-secondary:#8888a0;
+  --accent-green:#34d399; --accent-red:#f87171; --accent-blue:#60a5fa;
+  --accent-gold:#fbbf24; --accent-purple:#a78bfa; --border-subtle:rgba(255,255,255,0.06);
+}
+*{box-sizing:border-box;}
+body{
+  background:var(--bg-main); color:var(--text-primary);
+  font-family:'Inter','Segoe UI',system-ui,sans-serif; margin:0; padding:0 16px 40px;
+  scroll-behavior:smooth;
+}
+.wrap{max-width:720px; margin:0 auto;}
+header{padding:40px 0 20px; text-align:center;}
+header h1{font-size:28px; font-weight:800; margin:0 0 8px;}
+header p{font-size:16px; color:var(--text-secondary); margin:0 0 4px;}
+header .date{font-size:12px; color:var(--text-secondary);}
+.gradient-line{height:3px; margin-top:20px; border-radius:2px;
+  background:linear-gradient(90deg,var(--accent-blue),var(--accent-purple),var(--accent-gold));}
+
+.card{
+  background:var(--bg-card); border:1px solid var(--border-subtle);
+  border-radius:16px; padding:28px; margin-top:28px;
+  box-shadow:0 4px 24px rgba(0,0,0,0.3); transition:transform .2s ease;
+  border-left:4px solid var(--accent-blue);
+}
+.card:hover{transform:translateY(-2px);}
+.card h2{
+  font-size:20px; font-weight:700; text-transform:uppercase; letter-spacing:1px;
+  margin:0 0 16px;
+}
+.card p, .card li{font-size:15px; line-height:1.7; color:var(--text-primary);}
+.card ul{padding-left:20px; margin:8px 0;}
+.label{font-size:12px; font-weight:500; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.5px;}
+
+.s1 h2{color:var(--accent-blue);}
+.s2{border-left-color:var(--accent-green);}
+.s2 h2{color:var(--accent-green);}
+.s3{border-left-color:var(--accent-purple);}
+.s3 h2{color:var(--accent-purple);}
+.s4{border-left-color:var(--accent-blue);}
+.s4 h2{color:var(--accent-blue);}
+.s5{border-left-color:var(--accent-red);}
+.s5 h2{color:var(--accent-red);}
+.s6{border-left-color:var(--accent-green);}
+.s6 h2{color:var(--accent-green);}
+.s7{border-left-color:var(--accent-gold); background:var(--bg-card-alt); padding:36px; box-shadow:0 0 20px rgba(251,191,36,0.15);}
+.s7 h2{color:var(--accent-gold);}
+.s8{border-left-color:var(--accent-gold);}
+.s8 h2{color:var(--accent-gold);}
+
+.option-card{
+  background:var(--bg-card-alt); border-radius:12px; padding:18px 20px; margin-bottom:16px;
+}
+.option-card h3{margin:0 0 10px; font-size:17px;}
+.tag{display:inline-block; font-size:11px; font-weight:600; padding:3px 8px; border-radius:6px; margin-top:8px;}
+.tag-best{background:rgba(52,211,153,0.15); color:var(--accent-green);}
+.tag-weak{background:rgba(248,113,113,0.15); color:var(--accent-red);}
+
+.matrix-row{display:flex; align-items:center; margin-bottom:14px;}
+.matrix-label{width:40%; font-size:13px; color:var(--text-secondary); padding-right:10px;}
+.bar-container{width:60%; height:28px; background:rgba(255,255,255,0.05); border-radius:8px; display:flex; gap:6px;}
+.bar{
+  height:100%; border-radius:8px; display:flex; align-items:center; justify-content:flex-end;
+  padding-right:8px; color:#fff; font-weight:700; font-size:12px;
+  width:0; animation:grow 0.8s ease-out forwards;
+}
+@keyframes grow{ to { width: var(--target); } }
+.bar-a{background:linear-gradient(90deg,#60a5fa,#3b82f6);}
+.bar-b{background:linear-gradient(90deg,#34d399,#10b981);}
+.total-row{margin-top:18px; padding-top:14px; border-top:1px solid var(--border-subtle); font-weight:700; font-size:16px;}
+.winner{color:var(--accent-gold);}
+
+.premortem-block{margin-bottom:18px;}
+.premortem-block h3{font-size:15px; color:var(--accent-red); margin-bottom:8px;}
+
+.day-row{display:flex; margin-bottom:10px; font-size:14px;}
+.day-num{width:90px; flex-shrink:0; color:var(--accent-green); font-weight:600;}
+
+.verdict-name{font-size:30px; font-weight:800; color:var(--accent-gold); margin:6px 0 12px;}
+.hard-truth{font-style:italic; color:var(--text-secondary); margin-top:14px;}
+
+.mini-cards{display:flex; gap:16px; flex-wrap:wrap; margin-top:16px;}
+.mini-card{
+  background:var(--bg-card-alt); padding:16px; border-radius:12px; flex:1; min-width:200px;
+  display:flex; flex-direction:column; justify-content:space-between;
+}
+.mini-card h4{font-size:13px; color:var(--text-secondary); text-transform:uppercase; margin:0 0 10px;}
+.mini-card .big{font-size:18px; font-weight:800; margin-bottom:6px;}
+.watermark{font-size:10px; color:var(--text-secondary); margin-top:12px; text-align:right;}
+
+footer{text-align:center; color:var(--text-secondary); font-size:12px; margin-top:40px;}
+
+@media(max-width:600px){
+  .card{padding:20px; border-radius:12px;}
+  .matrix-row{flex-direction:column; align-items:flex-start;}
+  .matrix-label{width:100%; margin-bottom:6px;}
+  .bar-container{width:100%;}
+  .mini-cards{flex-direction:column;}
+  header h1{font-size:24px;}
+  .verdict-name{font-size:26px;}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>DECISION REPORT</h1>
+  <p>AI Development vs. DSA — Where to Focus for a 6–12 Month Job/Internship Goal</p>
+  <div class="date">Generated August 6, 2026</div>
+  <div class="gradient-line"></div>
+</header>
+
+<!-- SECTION 1 -->
+<div class="card s1">
+  <h2>The Real Decision</h2>
+  <p>It's not really "AI dev vs. DSA" — it's whether to bet your limited time on what energizes you (building) or what gates you (interviews). The trade-off: skip DSA and you risk getting filtered out before anyone sees your portfolio; skip AI building and you risk passing interviews for jobs you're less prepared and less excited to do. It's hard because both paths feel necessary and you only have 6–12 months.</p>
+</div>
+
+<!-- SECTION 2 -->
+<div class="card s2">
+  <h2>The Case For Each Option</h2>
+
+  <div class="option-card">
+    <h3>Option A — Focus on AI Development</h3>
+    <p><span class="label">Strongest Case:</span> You stay motivated, ship real projects, and build a portfolio that differentiates you in a crowded junior-dev market where most candidates look identical on paper.</p>
+    <p><span class="label">Hidden Upside:</span> AI projects can become talking points that make interviewers curious enough to relax the DSA bar, especially at startups or AI-focused teams.</p>
+    <p><span class="label">Biggest Weakness:</span> Many companies — especially larger ones — still gate candidates with DSA rounds before anyone looks at your portfolio.</p>
+    <span class="tag tag-best">Best if you value: momentum & genuine skill-building</span>
+  </div>
+
+  <div class="option-card">
+    <h3>Option B — Focus on DSA</h3>
+    <p><span class="label">Strongest Case:</span> DSA is the widest, most predictable gate in tech hiring — improving it directly increases your odds of passing interviews at most companies, including AI roles.</p>
+    <p><span class="label">Hidden Upside:</span> DSA fluency also makes you faster and more confident when implementing AI systems — cleaner code, better debugging, less friction.</p>
+    <p><span class="label">Biggest Weakness:</span> Grinding DSA alone won't show anyone you can build things, and it's easy to lose motivation without a portfolio to point to.</p>
+    <span class="tag tag-weak">Weakness: no proof of building ability</span>
+  </div>
+</div>
+
+<!-- SECTION 3 -->
+<div class="card s3">
+  <h2>Assumption Buster</h2>
+  <p><span class="label">Assumptions you may be making:</span></p>
+  <ul>
+    <li>That this is an all-or-nothing choice, rather than a split you control.</li>
+    <li>That "most companies prioritize DSA" applies equally to every company you're targeting — AI-heavy startups often weigh portfolios more.</li>
+    <li>That enjoying AI dev now means you'll stay motivated on DSA if you switch focus — motivation is often a symptom of progress, not a fixed trait.</li>
+  </ul>
+  <p><span class="label">Biases at play:</span></p>
+  <ul>
+    <li><strong>Status quo bias</strong> — sticking with what you already enjoy because change feels effortful, not necessarily because it's optimal.</li>
+    <li><strong>Loss aversion</strong> — the fear of "wasting months" is looming larger than the equally real cost of under-preparing for interviews.</li>
+  </ul>
+  <p><span class="label">What you're definitely ignoring:</span> the specific companies/roles you're targeting — "some companies prioritize DSA" isn't the same as knowing what your actual target list requires.</p>
+</div>
+
+<!-- SECTION 4 -->
+<div class="card s4">
+  <h2>Decision Matrix</h2>
+  <div class="matrix-row"><div class="matrix-label">Life/Career Upside</div><div class="bar-container">
+    <div class="bar bar-a" style="--target:70%; animation-delay:0.1s;">7</div>
+    <div class="bar bar-b" style="--target:60%; animation-delay:0.2s;">6</div>
+  </div></div>
+  <div class="matrix-row"><div class="matrix-label">Financial Safety</div><div class="bar-container">
+    <div class="bar bar-a" style="--target:50%; animation-delay:0.1s;">5</div>
+    <div class="bar bar-b" style="--target:80%; animation-delay:0.2s;">8</div>
+  </div></div>
+  <div class="matrix-row"><div class="matrix-label">Growth & Learning</div><div class="bar-container">
+    <div class="bar bar-a" style="--target:90%; animation-delay:0.1s;">9</div>
+    <div class="bar bar-b" style="--target:60%; animation-delay:0.2s;">6</div>
+  </div></div>
+  <div class="matrix-row"><div class="matrix-label">Stress Level (10=low)</div><div class="bar-container">
+    <div class="bar bar-a" style="--target:40%; animation-delay:0.1s;">4</div>
+    <div class="bar bar-b" style="--target:50%; animation-delay:0.2s;">5</div>
+  </div></div>
+  <div class="matrix-row"><div class="matrix-label">Reversibility (10=easy)</div><div class="bar-container">
+    <div class="bar bar-a" style="--target:80%; animation-delay:0.1s;">8</div>
+    <div class="bar bar-b" style="--target:80%; animation-delay:0.2s;">8</div>
+  </div></div>
+  <div class="matrix-row"><div class="matrix-label">Long-term Alignment</div><div class="bar-container">
+    <div class="bar bar-a" style="--target:90%; animation-delay:0.1s;">9</div>
+    <div class="bar bar-b" style="--target:50%; animation-delay:0.2s;">5</div>
+  </div></div>
+  <div class="matrix-row"><div class="matrix-label">Regret Risk (10=low)</div><div class="bar-container">
+    <div class="bar bar-a" style="--target:40%; animation-delay:0.1s;">4</div>
+    <div class="bar bar-b" style="--target:60%; animation-delay:0.2s;">6</div>
+  </div></div>
+
+  <div class="total-row">Option A (AI Dev): <span class="winner">46 / 70</span> &nbsp;|&nbsp; Option B (DSA): 44 / 70</div>
+  <p style="font-size:12px; color:var(--text-secondary); margin-top:10px;">Note: scores are close — this isn't a blowout, it's a tilt. See Verdict for the actual recommendation, which is a blend, not a pure pick.</p>
+</div>
+
+<!-- SECTION 5 -->
+<div class="card s5">
+  <h2>Premortem — 12 Months From Now, It Failed</h2>
+
+  <div class="premortem-block">
+    <h3>Option A (AI Dev) Failed Because...</h3>
+    <ul>
+      <li>You couldn't pass the DSA screening rounds even for AI-focused roles.</li>
+      <li>Your projects were technically interesting but not polished or deployed enough to impress recruiters.</li>
+      <li>You ran out of runway (6–12 months) before your portfolio was "job-ready."</li>
+    </ul>
+    <p><span class="label">Early Warning Sign:</span> You're consistently failing first-round technical screens by month 3–4.</p>
+    <p><span class="label">Prevention:</span> Reserve a fixed weekly DSA block from day one, no matter how deep you are in AI projects.</p>
+  </div>
+
+  <div class="premortem-block">
+    <h3>Option B (DSA) Failed Because...</h3>
+    <ul>
+      <li>You passed technical screens but had nothing compelling to show in behavioral/portfolio rounds.</li>
+      <li>You burned out grinding problems without a visible sense of progress.</li>
+      <li>You lost the AI-specific edge that differentiated you from generic CS grads.</li>
+    </ul>
+    <p><span class="label">Early Warning Sign:</span> You're passing interviews but not getting excited about the roles, or recruiters keep asking "what have you built?"</p>
+    <p><span class="label">Prevention:</span> Keep at least one small AI project moving in parallel, even at low intensity.</p>
+  </div>
+</div>
+
+<!-- SECTION 6 -->
+<div class="card s6">
+  <h2>7-Day Test Plan</h2>
+  <div class="day-row"><div class="day-num">Day 1-2</div><div>Research: list your top 10 target companies/roles and check whether they screen with DSA, take-homes, or portfolio review.</div></div>
+  <div class="day-row"><div class="day-num">Day 3-4</div><div>Experiment: timebox 2 days — spend one day solely on DSA problems, one day solely on an AI project task. Notice energy and output.</div></div>
+  <div class="day-row"><div class="day-num">Day 5-6</div><div>Conversation: talk to someone recently hired for a similar role — ask what actually got them through the process.</div></div>
+  <div class="day-row"><div class="day-num">Day 7</div><div>Decide split: based on target-company data + your energy test, set a concrete weekly time ratio (e.g. 60/40) and commit for 4 weeks.</div></div>
+</div>
+
+<!-- SECTION 7 -->
+<div class="card s7">
+  <h2>The Verdict</h2>
+  <div class="verdict-name">70/30 Split — AI Dev Leads, DSA Never Stops</div>
+  <p>Your matrix scores are nearly tied (46 vs 44) — that's not a coincidence, it's a signal that neither pure path fits your actual goal. Given your 6-12 month timeline and dual goal (portfolio + interview-readiness), the better move is AI dev as your primary driver with a non-negotiable, fixed weekly DSA block from week one — not "later."</p>
+  <p><span class="label">What Could Flip It:</span> If your target-company research (Day 1-2) shows most of your top choices are large companies with heavy DSA-first screening, shift the ratio closer to 50/50.</p>
+  <p class="hard-truth">Hard truth: motivation is not a strategy — if you don't schedule DSA now, "later" will keep losing to whatever project excites you that week.</p>
+</div>
+
+<!-- SECTION 8 -->
+<div class="card s8">
+  <h2>Shareable Cards</h2>
+  <div class="mini-cards">
+    <div class="mini-card">
+      <h4>Matrix Summary</h4>
+      <div class="big" style="color:var(--accent-blue);">AI Dev: 46/70</div>
+      <div class="big" style="color:var(--accent-green);">DSA: 44/70</div>
+      <div class="watermark">Built with Claude AI</div>
+    </div>
+    <div class="mini-card">
+      <h4>Verdict</h4>
+      <div class="big" style="color:var(--accent-gold);">70/30 — AI Dev Leads</div>
+      <p style="font-size:13px; color:var(--text-secondary);">DSA never goes to zero — it just isn't the main event.</p>
+      <div class="watermark">Built with Claude AI</div>
+    </div>
+    <div class="mini-card">
+      <h4>Hook</h4>
+      <p style="font-size:14px; font-weight:700;">"I almost picked the 'safe' path and burned out doing it."</p>
+      <p style="font-size:13px; color:var(--text-secondary);">Ran my career decision through a strategist AI. Turns out the scores were nearly tied — the real answer was a split, not a switch. Try it on your own hard call.</p>
+      <div class="watermark">Built with Claude AI</div>
+    </div>
+  </div>
+</div>
+
+<footer>Built with Claude AI | ABTalks 60-Day Challenge</footer>
+
+</div>
+</body>
+</html>
