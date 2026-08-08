@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Content Intelligence Studio</title>
+<style>
+  :root{
+    --ink:#0E1420;
+    --ink-2:#141C2B;
+    --ink-3:#1B2536;
+    --line:#2A3548;
+    --paper:#F6F3EC;
+    --paper-dim:#C9CDD6;
+    --amber:#E8A33D;
+    --amber-soft:#E8A33D33;
+    --teal:#5FB8B0;
+    --mint:#6FCF97;
+    --red:#E8685D;
+    --text-hi:#F3F1EA;
+    --text-mid:#B7BFCC;
+    --text-low:#7C8598;
+    --radius:14px;
+    --serif: Georgia, 'Iowan Old Style', 'Palatino Linotype', Palatino, serif;
+    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Consolas, monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 10% -10%, #1a2436 0%, transparent 60%),
+      radial-gradient(1000px 500px at 100% 0%, #16202f 0%, transparent 55%),
+      var(--ink);
+    color:var(--text-hi);
+    font-family:var(--sans);
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--amber-soft);color:var(--text-hi);}
+  a{color:var(--amber);}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 24px 100px;}
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:22px 24px;border-bottom:1px solid var(--line);
+    position:sticky;top:0;z-index:50;
+    background:rgba(14,20,32,0.86);backdrop-filter:blur(10px);
+  }
+  .brand{display:flex;align-items:center;gap:12px;}
+  .brand-mark{
+    width:34px;height:34px;border-radius:8px;
+    background:linear-gradient(135deg,var(--amber),#c97a2b);
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--serif);font-weight:700;color:#1a1204;font-size:17px;
+    box-shadow:0 4px 14px -4px var(--amber-soft);
+  }
+  .brand-name{font-family:var(--serif);font-size:19px;letter-spacing:0.2px;}
+  .brand-sub{font-size:11px;color:var(--text-low);text-transform:uppercase;letter-spacing:1.6px;margin-top:1px;}
+  .topbar-right{font-size:12px;color:var(--text-low);font-family:var(--mono);}
+
+  /* ---------- Hero / Intake ---------- */
+  .hero{padding:56px 0 20px;}
+  .eyebrow{
+    font-family:var(--mono);font-size:11px;letter-spacing:2px;text-transform:uppercase;
+    color:var(--teal);margin-bottom:14px;display:flex;align-items:center;gap:10px;
+  }
+  .eyebrow::before{content:'';width:22px;height:1px;background:var(--teal);}
+  h1.hero-title{
+    font-family:var(--serif);font-size:clamp(32px,4.4vw,52px);line-height:1.05;
+    margin:0 0 16px;font-weight:400;color:var(--text-hi);letter-spacing:-0.5px;
+  }
+  h1.hero-title em{color:var(--amber);font-style:normal;}
+  .hero-desc{color:var(--text-mid);font-size:15.5px;max-width:600px;line-height:1.6;margin-bottom:6px;}
+  .brief-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px;}
+  .chip{
+    font-family:var(--mono);font-size:11.5px;color:var(--text-mid);
+    border:1px solid var(--line);padding:6px 12px;border-radius:100px;
+    background:var(--ink-2);
+  }
+  .chip b{color:var(--amber);font-weight:600;}
+
+  /* ---------- Light table (upload panel) ---------- */
+  .light-table{
+    margin-top:36px;border:1px solid var(--line);border-radius:var(--radius);
+    background:linear-gradient(180deg,var(--ink-2),var(--ink-3));
+    padding:28px;position:relative;overflow:hidden;
+  }
+  .light-table::before{
+    content:'';position:absolute;inset:0;
+    background:repeating-linear-gradient(90deg,transparent,transparent 39px,#ffffff05 40px);
+    pointer-events:none;
+  }
+  .lt-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;position:relative;z-index:1;}
+  @media(max-width:820px){.lt-grid{grid-template-columns:1fr;}}
+  .field-label{
+    font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:1.4px;
+    color:var(--text-low);margin-bottom:8px;display:block;
+  }
+  textarea{
+    width:100%;background:var(--ink);border:1px solid var(--line);border-radius:10px;
+    color:var(--text-hi);padding:14px;font-family:var(--sans);font-size:14px;line-height:1.55;
+    resize:vertical;min-height:130px;transition:border-color .2s;
+  }
+  textarea:focus{outline:none;border-color:var(--amber);}
+  .upload-zone{
+    border:1.5px dashed var(--line);border-radius:10px;padding:16px;
+    display:flex;flex-direction:column;gap:10px;background:var(--ink);
+    min-height:130px;
+  }
+  .upload-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .upload-btn{
+    font-family:var(--sans);font-size:12.5px;font-weight:600;color:var(--text-hi);
+    background:var(--ink-3);border:1px solid var(--line);border-radius:8px;
+    padding:9px 14px;cursor:pointer;transition:all .15s;white-space:nowrap;
+  }
+  .upload-btn:hover{border-color:var(--amber);color:var(--amber);}
+  input[type=file]{display:none;}
+  .thumb-row{display:flex;gap:10px;flex-wrap:wrap;}
+  .thumb{
+    position:relative;width:72px;height:72px;border-radius:8px;overflow:hidden;
+    border:1px solid var(--line);flex-shrink:0;
+  }
+  .thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+  .thumb .tag{
+    position:absolute;bottom:0;left:0;right:0;background:#000000cc;
+    font-family:var(--mono);font-size:8px;text-align:center;padding:2px 0;color:var(--text-mid);
+  }
+  .thumb .rm{
+    position:absolute;top:2px;right:2px;width:16px;height:16px;border-radius:50%;
+    background:#000000aa;color:#fff;border:none;font-size:10px;cursor:pointer;line-height:16px;
+  }
+  .upload-hint{font-size:11px;color:var(--text-low);}
+
+  .lt-footer{
+    display:flex;align-items:center;justify-content:space-between;margin-top:24px;
+    position:relative;z-index:1;flex-wrap:wrap;gap:14px;
+  }
+  .rigor-select{display:flex;gap:8px;flex-wrap:wrap;}
+  .rigor-opt{
+    font-family:var(--mono);font-size:11px;padding:7px 12px;border-radius:100px;
+    border:1px solid var(--line);color:var(--text-low);cursor:pointer;transition:all .15s;
+  }
+  .rigor-opt.active{border-color:var(--amber);color:var(--amber);background:var(--amber-soft);}
+
+  .run-btn{
+    font-family:var(--serif);font-size:16px;color:#1a1204;
+    background:linear-gradient(135deg,var(--amber),#d38a2f);
+    border:none;padding:14px 30px;border-radius:10px;cursor:pointer;
+    box-shadow:0 8px 24px -8px var(--amber-soft);transition:transform .15s, box-shadow .15s;
+    font-weight:700;letter-spacing:0.2px;
+  }
+  .run-btn:hover{transform:translateY(-1px);box-shadow:0 10px 30px -6px var(--amber-soft);}
+  .run-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+  .run-btn:active{transform:translateY(0);}
+
+  .err-banner{
+    margin-top:16px;border:1px solid var(--red);background:#e8685d1a;color:#f3a49d;
+    padding:12px 16px;border-radius:10px;font-size:13px;display:none;
+  }
+
+  /* ---------- Demo mode banner & flags ---------- */
+  .demo-banner{
+    display:flex;align-items:center;gap:12px;
+    background:linear-gradient(90deg,#241a0d,#2a2110);
+    border-bottom:1px solid var(--amber);
+    padding:10px 24px;font-size:12.5px;color:var(--text-mid);line-height:1.5;
+  }
+  .demo-banner b{color:var(--amber);}
+  .demo-banner code{font-family:var(--mono);background:var(--ink);border:1px solid var(--line);border-radius:5px;padding:1px 6px;color:var(--teal);font-size:11.5px;}
+  .demo-banner-dot{width:8px;height:8px;border-radius:50%;background:var(--amber);flex-shrink:0;animation:pulse 1.4s infinite ease-in-out;}
+
+  .demo-mode-flag{
+    display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:11.5px;
+    color:var(--amber);background:var(--amber-soft);border:1px solid var(--amber);
+    border-radius:8px;padding:10px 14px;margin-bottom:18px;
+  }
+  .dm-dot{width:7px;height:7px;border-radius:50%;background:var(--amber);flex-shrink:0;animation:pulse 1.4s infinite ease-in-out;}
+
+  .demo-explainer{
+    margin-top:16px;font-size:12.5px;color:var(--text-mid);line-height:1.6;
+    border-top:1px dashed var(--line);padding-top:14px;
+  }
+  .demo-explainer code{font-family:var(--mono);background:var(--ink);border:1px solid var(--line);border-radius:5px;padding:1px 6px;color:var(--teal);font-size:11.5px;}
+  .demo-inline-tag{
+    display:inline-block;font-family:var(--mono);font-size:9.5px;letter-spacing:1px;
+    color:var(--amber);background:var(--amber-soft);border:1px solid var(--amber);
+    border-radius:100px;padding:2px 8px;vertical-align:middle;
+  }
+  .rc-name .demo-inline-tag{margin-left:6px;}
+
+  /* ---------- Pipeline / activity log ---------- */
+  .pipeline-section{margin-top:52px;display:none;}
+  .section-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:8px;}
+  .section-title{font-family:var(--serif);font-size:24px;color:var(--text-hi);}
+  .section-note{font-family:var(--mono);font-size:11px;color:var(--text-low);}
+
+  .reviewer-grid{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-bottom:22px;
+  }
+  .reviewer-card{
+    border:1px solid var(--line);background:var(--ink-2);border-radius:12px;padding:16px;
+    transition:border-color .3s, background .3s;
+  }
+  .reviewer-card.active{border-color:var(--amber);background:linear-gradient(180deg,#241a0d,var(--ink-2));}
+  .reviewer-card.done{border-color:var(--mint);}
+  .reviewer-card.error{border-color:var(--red);}
+  .rc-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+  .rc-name{font-size:13.5px;font-weight:700;color:var(--text-hi);}
+  .rc-role{font-size:11px;color:var(--text-low);margin-bottom:10px;line-height:1.4;}
+  .rc-status{
+    font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:1px;
+    padding:3px 8px;border-radius:100px;background:var(--ink-3);color:var(--text-low);
+  }
+  .rc-status.active{background:var(--amber-soft);color:var(--amber);}
+  .rc-status.done{background:#6fcf9722;color:var(--mint);}
+  .rc-status.error{background:#e8685d22;color:var(--red);}
+  .dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;background:currentColor;}
+  .dot.pulse{animation:pulse 1.1s infinite ease-in-out;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.25;}}
+
+  .activity-log{
+    border:1px solid var(--line);border-radius:12px;background:#0A0F18;padding:14px 16px;
+    max-height:180px;overflow-y:auto;font-family:var(--mono);font-size:11.5px;color:var(--text-mid);
+  }
+  .activity-log div{padding:3px 0;border-bottom:1px dashed #1c273a;}
+  .activity-log div:last-child{border-bottom:none;}
+  .activity-log .t{color:var(--text-low);margin-right:8px;}
+  .activity-log .ok{color:var(--mint);}
+  .activity-log .warn{color:var(--amber);}
+  .activity-log .bad{color:var(--red);}
+
+  /* ---------- Results ---------- */
+  .results{display:none;margin-top:60px;}
+  .score-hero{
+    border:1px solid var(--line);border-radius:var(--radius);
+    background:linear-gradient(135deg,var(--ink-2),var(--ink-3));
+    padding:36px;display:flex;align-items:center;gap:36px;flex-wrap:wrap;margin-bottom:32px;
+  }
+  .score-ring-wrap{position:relative;width:150px;height:150px;flex-shrink:0;}
+  .score-ring-wrap svg{transform:rotate(-90deg);}
+  .score-num{
+    position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  }
+  .score-num .n{font-family:var(--serif);font-size:38px;color:var(--text-hi);}
+  .score-num .l{font-family:var(--mono);font-size:9px;color:var(--text-low);text-transform:uppercase;letter-spacing:1px;}
+  .score-hero-text{flex:1;min-width:260px;}
+  .score-hero-text h2{font-family:var(--serif);font-size:22px;margin:0 0 8px;font-weight:400;}
+  .score-hero-text p{color:var(--text-mid);font-size:14px;line-height:1.6;margin:0;}
+  .verdict-badge{
+    display:inline-block;font-family:var(--mono);font-size:11px;padding:4px 10px;border-radius:100px;
+    margin-bottom:12px;text-transform:uppercase;letter-spacing:1px;
+  }
+
+  .cat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:36px;}
+  .cat-card{border:1px solid var(--line);background:var(--ink-2);border-radius:12px;padding:18px;}
+  .cat-top{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px;}
+  .cat-name{font-size:13px;font-weight:700;color:var(--text-hi);}
+  .cat-score{font-family:var(--serif);font-size:20px;color:var(--amber);}
+  .bar-track{height:6px;background:var(--ink);border-radius:100px;overflow:hidden;margin-bottom:10px;}
+  .bar-fill{height:100%;border-radius:100px;background:linear-gradient(90deg,var(--teal),var(--amber));width:0%;transition:width 1.1s cubic-bezier(.2,.8,.2,1);}
+  .cat-reason{font-size:12.5px;color:var(--text-mid);line-height:1.55;}
+
+  .tabs{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:0;}
+  .tab-btn{
+    font-family:var(--mono);font-size:11.5px;text-transform:uppercase;letter-spacing:0.8px;
+    color:var(--text-low);background:none;border:none;padding:10px 4px;cursor:pointer;
+    border-bottom:2px solid transparent;margin-right:14px;transition:color .15s,border-color .15s;
+  }
+  .tab-btn.active{color:var(--amber);border-bottom-color:var(--amber);}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+
+  .swot-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media(max-width:700px){.swot-grid{grid-template-columns:1fr;}}
+  .swot-card{border:1px solid var(--line);border-radius:12px;padding:18px;background:var(--ink-2);}
+  .swot-card h4{
+    font-family:var(--mono);font-size:11px;text-transform:uppercase;letter-spacing:1.2px;margin:0 0 12px;
+  }
+  .swot-card.strengths h4{color:var(--mint);}
+  .swot-card.weaknesses h4{color:var(--red);}
+  .swot-card.opportunities h4{color:var(--teal);}
+  .swot-card.risks h4{color:var(--amber);}
+  .swot-card ul{margin:0;padding-left:18px;font-size:13px;color:var(--text-mid);line-height:1.7;}
+
+  .rewrite-card{border:1px solid var(--line);border-radius:12px;padding:20px;background:var(--ink-2);margin-bottom:16px;}
+  .rewrite-label{font-family:var(--mono);font-size:10.5px;color:var(--text-low);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px;}
+  .rewrite-body{font-size:14.5px;line-height:1.7;color:var(--text-hi);white-space:pre-wrap;font-family:var(--sans);}
+  .before-after{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media(max-width:700px){.before-after{grid-template-columns:1fr;}}
+  .ba-col.before{border-left:3px solid var(--red);}
+  .ba-col.after{border-left:3px solid var(--mint);}
+  .ba-col{padding-left:16px;}
+
+  .hook-list{display:flex;flex-direction:column;gap:10px;}
+  .hook-item{
+    border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--ink-2);
+    font-size:14px;color:var(--text-hi);position:relative;padding-left:44px;
+  }
+  .hook-item .num{
+    position:absolute;left:14px;top:14px;font-family:var(--serif);color:var(--amber);font-size:15px;
+  }
+
+  .checklist{display:flex;flex-direction:column;gap:8px;}
+  .check-item{display:flex;gap:10px;align-items:flex-start;font-size:13.5px;color:var(--text-mid);padding:8px 0;border-bottom:1px dashed var(--line);}
+  .check-item:last-child{border-bottom:none;}
+  .check-item .cb{width:16px;height:16px;border:1.5px solid var(--teal);border-radius:4px;flex-shrink:0;margin-top:2px;}
+
+  .report-block{border:1px solid var(--line);border-radius:var(--radius);padding:28px;background:var(--ink-2);margin-bottom:20px;}
+  .report-block h3{font-family:var(--serif);font-size:19px;margin:0 0 14px;color:var(--amber);font-weight:400;}
+  .report-block p{color:var(--text-mid);font-size:14px;line-height:1.75;margin:0 0 10px;}
+  .predict-row{display:flex;gap:20px;flex-wrap:wrap;margin-top:14px;}
+  .predict-metric{flex:1;min-width:140px;border:1px solid var(--line);border-radius:10px;padding:14px;background:var(--ink);}
+  .predict-metric .pm-label{font-family:var(--mono);font-size:10px;color:var(--text-low);text-transform:uppercase;letter-spacing:1px;}
+  .predict-metric .pm-val{font-family:var(--serif);font-size:22px;color:var(--teal);margin-top:4px;}
+  .ai-note{font-family:var(--mono);font-size:10.5px;color:var(--text-low);margin-top:16px;border-top:1px dashed var(--line);padding-top:12px;}
+
+  .prompt-chip-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px;}
+  .prompt-chip{
+    font-size:12.5px;color:var(--text-mid);border:1px solid var(--line);border-radius:10px;
+    padding:10px 14px;cursor:pointer;background:var(--ink);transition:all .15s;
+  }
+  .prompt-chip:hover{border-color:var(--teal);color:var(--teal);}
+
+  .loading-dots span{animation:pulse 1.2s infinite;animation-delay:calc(var(--i)*0.15s);}
+
+  .footer-note{text-align:center;color:var(--text-low);font-size:11.5px;margin-top:70px;font-family:var(--mono);}
+
+  ::-webkit-scrollbar{width:8px;height:8px;}
+  ::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px;}
+
+  @media(prefers-reduced-motion: reduce){
+    *{animation-duration:0.001ms !important;transition-duration:0.001ms !important;}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-mark">Ci</div>
+    <div>
+      <div class="brand-name">Content Intelligence Studio</div>
+      <div class="brand-sub">AI Consultant · Demo Mode</div>
+    </div>
+  </div>
+  <div class="topbar-right" id="clock">—</div>
+</div>
+
+<div class="demo-banner">
+  <span class="demo-banner-dot"></span>
+  <span><b>DEMO MODE</b> — this build runs entirely offline, straight from <code>file://</code>. No network calls are made and no live Claude API is used. Every score, review, and rewrite below is a locally generated placeholder for demonstrating the interface, not a real model output.</span>
+</div>
+
+<div class="wrap">
+
+  <div class="hero">
+    <div class="eyebrow">Session Brief</div>
+    <h1 class="hero-title">Put your caption <em>on the light table.</em></h1>
+    <p class="hero-desc">Configured for your Instagram post, optimizing for engagement — comments, saves, and shares. In this offline demo build, a simulated panel of specialist reviewers walks through the same workflow a live review would use, so you can see the interface end to end without any backend.</p>
+    <div class="brief-chips">
+      <div class="chip">Format: <b>Social Post</b></div>
+      <div class="chip">Platform: <b>Instagram</b></div>
+      <div class="chip">Goal: <b>Engagement</b></div>
+      <div class="chip">Inputs: <b>Text + Image + Analytics</b></div>
+      <div class="chip">Rigor: <b id="rigorChip">Balanced Professional</b></div>
+      <div class="chip" style="border-color:var(--amber);color:var(--amber);">Mode: <b>Demo — offline, no API</b></div>
+    </div>
+
+    <div class="light-table">
+      <div class="demo-mode-flag">
+        <span class="dm-dot"></span>
+        Running in Demo Mode — no API key, no server, no network requests. All output below is synthetic and illustrative.
+      </div>
+      <div class="lt-grid">
+        <div>
+          <label class="field-label">Caption / copy text</label>
+          <textarea id="captionInput" placeholder="Paste the Instagram caption you want reviewed…"></textarea>
+
+          <label class="field-label" style="margin-top:18px;">Extra context (optional)</label>
+          <textarea id="contextInput" style="min-height:70px;" placeholder="e.g. audience, niche, what happened when you posted it, transcript of accompanying reel…"></textarea>
+        </div>
+
+        <div>
+          <label class="field-label">Image, thumbnail & analytics screenshots</label>
+          <div class="upload-zone">
+            <div class="upload-row">
+              <button class="upload-btn" onclick="document.getElementById('fileInput').click()">+ Add image / screenshot</button>
+              <span class="upload-hint">JPG / PNG — post image, thumbnail, or analytics screenshot</span>
+            </div>
+            <input type="file" id="fileInput" accept="image/*" multiple>
+            <div class="thumb-row" id="thumbRow"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="lt-footer">
+        <div>
+          <label class="field-label" style="margin-bottom:8px;">Review rigor</label>
+          <div class="rigor-select" id="rigorSelect">
+            <div class="rigor-opt" data-v="Supportive coach">Supportive</div>
+            <div class="rigor-opt active" data-v="Balanced professional">Balanced</div>
+            <div class="rigor-opt" data-v="Brutally honest, top-1% agency-level">Brutal</div>
+            <div class="rigor-opt" data-v="Data-obsessed, ruthless on metrics">Data-obsessed</div>
+          </div>
+        </div>
+        <button class="run-btn" id="runBtn" onclick="runReview()">Begin Studio Review →</button>
+      </div>
+      <div class="err-banner" id="errBanner"></div>
+    </div>
+
+    <div class="demo-explainer">
+      <b>How this demo works:</b> clicking "Begin Studio Review" runs the same five-stage
+      reviewer pipeline and UI flow as the live app, but each reviewer's output is generated
+      locally by a template-based simulator instead of a real API call — no network request is
+      made at all, so this works from a plain double-clicked <code>file://</code> HTML file
+      with no server of any kind. Every section of the results below is marked
+      <span class="demo-inline-tag">SIMULATED</span> for clarity.
+    </div>
+  </div>
+
+  <!-- PIPELINE -->
+  <div class="pipeline-section" id="pipelineSection">
+    <div class="section-head">
+      <div class="section-title">Review Panel</div>
+      <div class="section-note" id="pipelineNote">Assembling specialist reviewers…</div>
+    </div>
+    <div class="reviewer-grid" id="reviewerGrid"></div>
+    <div class="activity-log" id="activityLog"></div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="results" id="results">
+
+    <div class="score-hero">
+      <div class="score-ring-wrap">
+        <svg width="150" height="150" viewBox="0 0 150 150">
+          <circle cx="75" cy="75" r="64" stroke="#1B2536" stroke-width="12" fill="none"/>
+          <circle id="scoreCircle" cx="75" cy="75" r="64" stroke="#E8A33D" stroke-width="12" fill="none"
+            stroke-linecap="round" stroke-dasharray="402" stroke-dashoffset="402"
+            style="transition:stroke-dashoffset 1.4s cubic-bezier(.2,.8,.2,1);"/>
+        </svg>
+        <div class="score-num"><div class="n" id="scoreNum">–</div><div class="l">Demo Score / 100</div></div>
+      </div>
+      <div class="score-hero-text">
+        <div class="verdict-badge" id="verdictBadge">—</div>
+        <span class="demo-inline-tag" style="margin-left:8px;">SIMULATED</span>
+        <h2 id="verdictHeadline">—</h2>
+        <p id="verdictSummary">—</p>
+      </div>
+    </div>
+
+    <div class="section-head"><div class="section-title">Category Breakdown</div></div>
+    <div class="cat-grid" id="catGrid"></div>
+
+    <div class="tabs" id="tabs">
+      <button class="tab-btn active" data-tab="swot">Strengths &amp; Gaps</button>
+      <button class="tab-btn" data-tab="rewrite">Rewrite</button>
+      <button class="tab-btn" data-tab="hooks">Hooks &amp; Titles</button>
+      <button class="tab-btn" data-tab="checklist">Publishing Checklist</button>
+      <button class="tab-btn" data-tab="report">Final Report</button>
+    </div>
+
+    <div class="tab-panel active" id="tab-swot">
+      <div class="swot-grid">
+        <div class="swot-card strengths"><h4>Strengths</h4><ul id="listStrengths"></ul></div>
+        <div class="swot-card weaknesses"><h4>Weaknesses</h4><ul id="listWeaknesses"></ul></div>
+        <div class="swot-card opportunities"><h4>Missed Opportunities</h4><ul id="listOpportunities"></ul></div>
+        <div class="swot-card risks"><h4>Platform-Specific Notes</h4><ul id="listRisks"></ul></div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="tab-rewrite">
+      <div class="before-after" style="margin-bottom:20px;">
+        <div class="ba-col before">
+          <div class="rewrite-label">Before</div>
+          <div class="rewrite-body" id="beforeText">—</div>
+        </div>
+        <div class="ba-col after">
+          <div class="rewrite-label">After — AI Rewrite</div>
+          <div class="rewrite-body" id="afterText">—</div>
+        </div>
+      </div>
+      <div class="rewrite-card">
+        <div class="rewrite-label">Why this rewrite works</div>
+        <div class="rewrite-body" id="rewriteReasoning" style="font-size:13.5px;color:var(--text-mid);">—</div>
+      </div>
+    </div>
+
+    <div class="tab-panel" id="tab-hooks">
+      <div class="section-note" style="margin-bottom:12px;">Alternative hooks / opening lines</div>
+      <div class="hook-list" id="hookList"></div>
+    </div>
+
+    <div class="tab-panel" id="tab-checklist">
+      <div class="checklist" id="checklistList"></div>
+    </div>
+
+    <div class="tab-panel" id="tab-report">
+      <div class="report-block">
+        <h3>Executive Summary</h3>
+        <p id="execSummary">—</p>
+      </div>
+      <div class="report-block">
+        <h3>Content Health Report</h3>
+        <p id="healthReport">—</p>
+      </div>
+      <div class="report-block">
+        <h3>Highest-Impact Improvements</h3>
+        <div id="impactList" class="checklist"></div>
+      </div>
+      <div class="report-block">
+        <h3>Predicted Performance Potential</h3>
+        <p style="margin-bottom:4px;">An AI estimate, not a guarantee — directional only.</p>
+        <div class="predict-row" id="predictRow"></div>
+        <div class="ai-note">These figures are model-generated estimates based on qualitative signal, not measured data.</div>
+      </div>
+      <div class="report-block">
+        <h3>Go Deeper</h3>
+        <p>Ask the studio for more:</p>
+        <div class="prompt-chip-row" id="promptChips"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer-note">CONTENT INTELLIGENCE STUDIO — every score, insight and rewrite above was generated live by Claude. Nothing here is hardcoded.</div>
+</div>
+
+<script>
+/* ============ Config from interview ============ */
+const BRIEF = {
+  format: "Social media post (Instagram caption)",
+  platform: "Instagram",
+  goal: "Drive engagement (comments, saves, shares)",
+  inputs: "Caption text, post image/thumbnail, and analytics screenshot",
+  rigor: "Balanced professional — honest but constructive"
+};
+
+// DEMO MODE: this build makes no network requests of any kind. There is no API URL,
+// no proxy, no server. All "reviewer" output is produced locally by generateDemoReview()
+// below, which assembles clearly-labeled placeholder text from the actual input the
+// person typed/uploaded, purely to demonstrate the interface and workflow offline.
+const DEMO_MODE = true;
+
+let uploadedImages = []; // {dataUrl, mediaType, base64, name}
+
+/* ============ Clock ============ */
+function tickClock(){
+  const d = new Date();
+  document.getElementById('clock').textContent = d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+setInterval(tickClock, 1000); tickClock();
+
+/* ============ Rigor selector ============ */
+document.querySelectorAll('.rigor-opt').forEach(el=>{
+  el.addEventListener('click', ()=>{
+    document.querySelectorAll('.rigor-opt').forEach(x=>x.classList.remove('active'));
+    el.classList.add('active');
+    BRIEF.rigor = el.dataset.v;
+    document.getElementById('rigorChip').textContent = el.textContent;
+  });
+});
+
+/* ============ File upload ============ */
+document.getElementById('fileInput').addEventListener('change', async (e)=>{
+  const files = Array.from(e.target.files);
+  for(const f of files){
+    if(uploadedImages.length >= 6) break;
+    const dataUrl = await readFileAsDataURL(f);
+    const base64 = dataUrl.split(',')[1];
+    const mediaType = f.type || 'image/png';
+    uploadedImages.push({dataUrl, mediaType, base64, name: f.name});
+  }
+  renderThumbs();
+  e.target.value = '';
+});
+
+function readFileAsDataURL(file){
+  return new Promise((res, rej)=>{
+    const r = new FileReader();
+    r.onload = ()=>res(r.result);
+    r.onerror = rej;
+    r.readAsDataURL(file);
+  });
+}
+
+function renderThumbs(){
+  const row = document.getElementById('thumbRow');
+  row.innerHTML = '';
+  uploadedImages.forEach((img, i)=>{
+    const div = document.createElement('div');
+    div.className = 'thumb';
+    div.innerHTML = `<img src="${img.dataUrl}"><button class="rm" onclick="removeThumb(${i})">×</button><div class="tag">${img.name.length>10?img.name.slice(0,9)+'…':img.name}</div>`;
+    row.appendChild(div);
+  });
+}
+function removeThumb(i){ uploadedImages.splice(i,1); renderThumbs(); }
+
+/* ============ Reviewer panel definitions ============ */
+const REVIEWERS = [
+  {
+    id:'hook',
+    name:'Hook & Copy Specialist',
+    role:'Evaluates the opening line, copy structure, and readability of the caption.',
+    system: `You are a senior Instagram copywriting specialist who has written and audited thousands of high-performing captions. You are reviewing a caption whose owner wants to drive engagement (comments, saves, shares). Review rigor level: ${BRIEF.rigor}. Judge the hook/opening line, pacing, clarity, voice, caption structure, and use of line breaks/whitespace for mobile readability. Be specific and cite the actual words used. Do not use JSON, markdown code fences, or bullet-point symbols like asterisks — write in plain prose and simple numbered or dashed lists only where natural. End with a line that starts exactly with "SCORE:" followed by a number from 0-100 representing hook & copy quality.`
+  },
+  {
+    id:'visual',
+    name:'Visual & Thumbnail Analyst',
+    role:'Analyzes any uploaded image or thumbnail for scroll-stopping power and brand fit.',
+    system: `You are a visual content strategist specializing in Instagram feed and thumbnail design. Review rigor level: ${BRIEF.rigor}. If an image is provided, analyze it directly: composition, color, contrast, focal point, text overlay legibility, thumb-stopping power in a crowded feed, and alignment with the caption's message. If no image was provided, say so plainly and score based on the described creative direction only, treating the absence of visuals as a gap for a platform this visual. Do not use JSON, code fences, or asterisk bullets. End with a line that starts exactly with "SCORE:" followed by a number from 0-100.`
+  },
+  {
+    id:'psych',
+    name:'Engagement Psychologist',
+    role:'Assesses emotional triggers, curiosity gaps, and reasons people would comment or share.',
+    system: `You are a behavioral psychologist specializing in what drives people to comment, save, and share social content. Review rigor level: ${BRIEF.rigor}. Assess the emotional arc of the caption, curiosity gaps, relatability, identity signaling, controversy/POV strength, and explicit or implicit prompts for interaction (questions, calls for opinions, tension). Explain the psychological mechanism behind each judgment. Do not use JSON, code fences, or asterisk bullets. End with a line that starts exactly with "SCORE:" followed by a number from 0-100.`
+  },
+  {
+    id:'algo',
+    name:'Platform Algorithm Strategist',
+    role:"Evaluates fit with Instagram's current distribution mechanics and format conventions.",
+    system: `You are a platform growth strategist who specializes in Instagram's distribution mechanics: the interplay between saves, shares, comments, dwell time, hashtags, captions length, and posting conventions. Review rigor level: ${BRIEF.rigor}. Judge how well this content is engineered for Instagram's algorithm specifically, given the stated goal of driving engagement. Comment on caption length strategy, calls to action, hashtag/keyword usage if present, and any accompanying analytics data provided — interpret real numbers if a screenshot is included. Do not use JSON, code fences, or asterisk bullets. End with a line that starts exactly with "SCORE:" followed by a number from 0-100.`
+  },
+  {
+    id:'editor',
+    name:'Executive Editor',
+    role:'Synthesizes every specialist review into the final studio report.',
+    system: `You are the executive editor of a top-tier social media consultancy, synthesizing the work of four specialist reviewers (hook/copy, visual, engagement psychology, platform/algorithm) into one authoritative final report for a client's Instagram caption. Review rigor level: ${BRIEF.rigor}. The client's goal is engagement (comments, saves, shares). You will be given the four specialist reviews plus the original content. Produce a complete, decisive, non-repetitive synthesis. Do not use JSON, markdown code fences, or asterisk bullets anywhere. Follow the exact section format requested in the user message, using the exact section header labels given, each on its own line in the form "### LABEL" followed by the content, so the response can be parsed reliably.`
+  }
+];
+
+/* ============ Activity log helpers ============ */
+function logActivity(msg, level){
+  const log = document.getElementById('activityLog');
+  const time = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const cls = level==='ok'?'ok':level==='warn'?'warn':level==='bad'?'bad':'';
+  const div = document.createElement('div');
+  div.innerHTML = `<span class="t">${time}</span><span class="${cls}">${msg}</span>`;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+
+function setReviewerStatus(id, status){
+  const card = document.getElementById('rc-'+id);
+  if(!card) return;
+  card.classList.remove('active','done','error');
+  const statusEl = card.querySelector('.rc-status');
+  if(status==='active'){
+    card.classList.add('active');
+    statusEl.className = 'rc-status active';
+    statusEl.innerHTML = '<span class="dot pulse"></span>Reviewing';
+  } else if(status==='done'){
+    card.classList.add('done');
+    statusEl.className = 'rc-status done';
+    statusEl.innerHTML = '<span class="dot"></span>Complete';
+  } else if(status==='error'){
+    card.classList.add('error');
+    statusEl.className = 'rc-status error';
+    statusEl.innerHTML = '<span class="dot"></span>Retrying';
+  } else {
+    statusEl.className = 'rc-status';
+    statusEl.innerHTML = '<span class="dot"></span>Queued';
+  }
+}
+
+/* ============ Runtime environment detection ============ */
+// The Anthropic API does not send CORS headers permitting arbitrary browser-origin
+// This build makes zero network calls. No fetch() to any host, local or remote.
+// generateDemoReview() below builds plausible-looking, clearly-labeled placeholder
+// text using simple heuristics over the actual caption/context/images the person
+// provided (length, punctuation, presence of a question, hashtag count, whether
+// images were attached) — never a template that ignores the input, but also never
+// a real model call. Every string returned includes explicit DEMO/SIMULATED framing
+// so nothing here could be mistaken for a live Claude response.
+
+function hashString(str){
+  let h = 0;
+  for(let i=0;i<str.length;i++){ h = (Math.imul(31,h) + str.charCodeAt(i))|0; }
+  return Math.abs(h);
+}
+function seededPick(seed, arr){ return arr[seed % arr.length]; }
+function seededRange(seed, min, max){ return min + (seed % (max-min+1)); }
+
+function analyzeCaptionSignals(caption){
+  const text = caption || '';
+  const words = text.trim().split(/\s+/).filter(Boolean);
+  const hasQuestion = /\?/.test(text);
+  const hashtagCount = (text.match(/#\w+/g)||[]).length;
+  const emojiCount = (text.match(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu)||[]).length;
+  const hasCTA = /\b(comment|save|share|tag|dm|link in bio|follow)\b/i.test(text);
+  return { words: words.length, hasQuestion, hashtagCount, emojiCount, hasCTA, isEmpty: words.length===0 };
+}
+
+const DEMO_TAG = "[DEMO — SIMULATED OUTPUT, NOT A LIVE MODEL RESPONSE]";
+
+function generateSpecialistDemo(reviewerId, caption, context, hasImages, seedBase){
+  const sig = analyzeCaptionSignals(caption);
+  const seed = hashString((caption||'')+reviewerId) + seedBase;
+  const snippet = (caption||'').slice(0,60).trim();
+  const quoteBit = snippet ? `"${snippet}${caption.length>60?'…':''}"` : "(no caption text was provided)";
+
+  const templates = {
+    hook: [
+      `${DEMO_TAG}\nSimulated hook & copy pass over ${quoteBit}. This placeholder review counted ${sig.words} words and ${sig.hasQuestion ? "detected a question mark, which a real reviewer would treat as a possible engagement hook." : "found no question mark — a live reviewer would likely flag the opening as a place to test a curiosity gap or direct question."} In demo mode this is illustrative text only, not an actual assessment of your writing.`,
+      `${DEMO_TAG}\nOffline simulation of a copy review for ${quoteBit}. Word count: ${sig.words}. ${sig.hasCTA ? "A call-to-action phrase was pattern-matched in the text, which this demo treats as a positive structural signal." : "No explicit call-to-action phrase was pattern-matched — a live reviewer would likely suggest adding one."} This is a canned demo narrative, not real editorial judgment.`
+    ],
+    visual: [
+      `${DEMO_TAG}\n${hasImages ? `${uploadedImages.length} image(s) were attached to this session. In a live run these would be sent to Claude's vision input for real analysis; in demo mode this text is a static placeholder and no image was actually examined.` : "No image was attached to this session. A live visual reviewer would flag the absence of a post image as a meaningful gap on a visual-first platform like Instagram."} This paragraph is generated locally and does not reflect real visual analysis.`,
+      `${DEMO_TAG}\nSimulated visual pass. ${hasImages ? "Image file(s) are present in this session but were not processed — demo mode never uploads or reads image bytes." : "No image is present in this session to evaluate."} A live reviewer would comment on composition, contrast, and thumb-stopping power here instead of this placeholder sentence.`
+    ],
+    psych: [
+      `${DEMO_TAG}\nOffline engagement-psychology placeholder for ${quoteBit}. ${sig.hasQuestion ? "A question was detected, which this demo treats as a simple proxy for an engagement prompt." : "No direct question was detected in the text."} Emoji count: ${sig.emojiCount}. This is template text standing in for the emotional-arc analysis a live reviewer would provide.`,
+      `${DEMO_TAG}\nSimulated psychology review. ${sig.isEmpty ? "No caption text was supplied, so there is nothing for this demo heuristic to react to." : `The caption runs ${sig.words} words, which this placeholder treats as ${sig.words < 15 ? "short — real review would ask whether there's enough context to create curiosity" : "long enough to carry a narrative arc, which a live reviewer would examine for pacing."}`} No genuine psychological assessment has occurred.`
+    ],
+    algo: [
+      `${DEMO_TAG}\nSimulated Instagram algorithm-fit pass. Hashtags detected: ${sig.hashtagCount}. ${sig.hasCTA ? "A save/share/comment-style call-to-action phrase was pattern-matched, which this demo scores favorably as a placeholder heuristic." : "No save/share/comment call-to-action phrase was pattern-matched."} A live reviewer would additionally read any attached analytics screenshot directly — this demo does not process image content at all.`,
+      `${DEMO_TAG}\nOffline platform-fit placeholder. Caption length: ${sig.words} words. This demo does not know Instagram's actual current ranking behavior at runtime — a live reviewer, backed by Claude, would reason about that explicitly. Treat every number in this panel as illustrative only.`
+    ]
+  };
+  const text = seededPick(seed, templates[reviewerId] || templates.hook);
+  const score = seededRange(seed, 55, 88);
+  return { text, score };
+}
+
+function generateEditorDemo(caption, specialistResults, seedBase){
+  const sig = analyzeCaptionSignals(caption);
+  const seed = hashString((caption||'')+"editor") + seedBase;
+  const overall = Math.round(
+    (specialistResults.hook.score + specialistResults.visual.score + specialistResults.psych.score + specialistResults.algo.score) / 4
+  );
+  const verdicts = ["Solid Foundation, Needs Sharpening","Promising Draft, Simulated Verdict","Demo Verdict: Room To Grow","Illustrative Pass — Iterate Further"];
+  const verdict = seededPick(seed, verdicts);
+  const snippet = (caption||'').trim();
+  const rewriteBase = snippet
+    ? snippet.replace(/\s+/g,' ').trim()
+    : "(no original caption was provided in this demo session)";
+  const rewriteDemo = snippet
+    ? `${rewriteBase}\n\n[DEMO REWRITE — this line is a template-based restatement of your original caption with a generic engagement prompt appended, not a real Claude rewrite]\nWhat's your take — comment below and let me know.`
+    : "[DEMO — no caption was supplied, so no simulated rewrite could be generated]";
+
+  return `### OVERALL_SCORE
+${overall}
+
+### VERDICT
+${verdict}
+
+### SUMMARY
+This is a simulated executive summary generated entirely offline with no network request. It is built from simple pattern checks (word count: ${sig.words}, hashtags: ${sig.hashtagCount}, question mark present: ${sig.hasQuestion ? "yes" : "no"}) and should not be treated as real editorial judgment.
+
+### STRENGTHS
+Caption text was present and readable by the demo parser
+${sig.hasCTA ? "A call-to-action phrase was pattern-matched in the text" : "The text was short enough to fit an Instagram caption preview"}
+${uploadedImages.length ? uploadedImages.length+" image file(s) were successfully attached to this session" : "The form accepted a caption-only submission without error"}
+
+### WEAKNESSES
+This entire section is placeholder text, not a real critique
+${sig.hasQuestion ? "" : "No question mark was detected, which a live reviewer might flag"}
+${sig.hashtagCount===0 ? "No hashtags were detected in the text" : ""}
+
+### OPPORTUNITIES
+Connect this demo to server.py and a real Anthropic API key for genuine analysis
+Try different rigor settings to see how the demo labeling changes
+Attach an image to see the (still simulated) visual-reviewer response change
+
+### PLATFORM_NOTES
+Demo mode does not reflect Instagram's actual current algorithm behavior
+A live reviewer would interpret any attached analytics screenshot directly
+This panel exists to demonstrate UI structure, not to give real platform advice
+
+### REWRITE
+${rewriteDemo}
+
+### REWRITE_REASONING
+This rewrite was produced by a local template, not by Claude. It is shown only to demonstrate where a real rewrite would appear in the interface.
+
+### HOOKS
+[DEMO] A simulated alternative opening line, variant 1
+[DEMO] A simulated alternative opening line, variant 2
+[DEMO] A simulated alternative opening line, variant 3
+[DEMO] A simulated alternative opening line, variant 4
+[DEMO] A simulated alternative opening line, variant 5
+
+### CHECKLIST
+Confirm caption reads clearly on a mobile screen
+Confirm an image or thumbnail is attached before publishing
+Confirm the call-to-action matches your actual goal
+Double-check hashtags are relevant and not excessive
+This checklist is generic placeholder content in demo mode
+Connect a real backend to get a checklist tailored to this caption
+
+### EXEC_SUMMARY
+This executive summary is entirely simulated. No Claude API call was made to produce it. It exists purely so you can see how the final report section is laid out before wiring up a real backend.
+
+### HEALTH_REPORT
+This health report is generated offline from basic heuristics (word count, punctuation, hashtag count) rather than genuine language understanding. In live mode, this paragraph would instead reflect Claude's actual synthesis of all four specialist reviews above.
+
+### IMPACT_IMPROVEMENTS
+[DEMO] Connect a real API backend to replace this placeholder guidance
+[DEMO] Re-run with live mode for a genuine highest-impact ranking
+[DEMO] Use this panel only to evaluate the interface, not the advice
+[DEMO] Nothing in this list was derived from real content analysis
+
+### PREDICTED_ENGAGEMENT_LIFT
+N/A — demo mode
+
+### PREDICTED_SAVE_RATE
+N/A — demo mode
+
+### PREDICTED_COMMENT_POTENTIAL
+N/A — demo mode
+
+### DEEPER_PROMPTS
+Set up server.py and an API key to enable live review
+Ask a live reviewer for 3 more caption variants
+Ask a live reviewer to score this against a specific competitor post
+Ask a live reviewer to tailor advice to a different platform`;
+}
+
+/* ============ Parsing helpers ============ */
+function extractScore(text){
+  const m = text.match(/SCORE:\s*(\d{1,3})/i);
+  if(m){ return Math.max(0, Math.min(100, parseInt(m[1],10))); }
+  return null;
+}
+function stripScoreLine(text){
+  return text.replace(/SCORE:\s*\d{1,3}\s*$/i,'').trim();
+}
+function extractSection(text, label){
+  // matches "### LABEL" up to next "### " or end
+  const re = new RegExp("### *"+label+" *\\n([\\s\\S]*?)(?=\\n### |$)", "i");
+  const m = text.match(re);
+  return m ? m[1].trim() : '';
+}
+function linesToListItems(block){
+  if(!block) return [];
+  return block.split('\n')
+    .map(l=>l.replace(/^[-*•\d.\)]+\s*/,'').trim())
+    .filter(l=>l.length>0);
+}
+
+/* ============ Main orchestration ============ */
+let panelInitialized = false;
+
+function initReviewerCards(){
+  const grid = document.getElementById('reviewerGrid');
+  grid.innerHTML = '';
+  REVIEWERS.forEach(r=>{
+    const card = document.createElement('div');
+    card.className = 'reviewer-card';
+    card.id = 'rc-'+r.id;
+    card.innerHTML = `
+      <div class="rc-top"><div class="rc-name">${r.name}<span class="demo-inline-tag">SIMULATED</span></div></div>
+      <div class="rc-role">${r.role}</div>
+      <div class="rc-status"><span class="dot"></span>Queued</div>
+    `;
+    grid.appendChild(card);
+  });
+  panelInitialized = true;
+}
+
+function wait(ms){ return new Promise(r=>setTimeout(r, ms)); }
+
+async function runReview(){
+  const errBanner = document.getElementById('errBanner');
+  errBanner.style.display = 'none';
+  errBanner.innerHTML = '';
+
+  const caption = document.getElementById('captionInput').value.trim();
+  const context = document.getElementById('contextInput').value.trim();
+
+  if(!caption && uploadedImages.length===0){
+    errBanner.textContent = 'Add a caption or at least one image before starting the review.';
+    errBanner.style.display = 'block';
+    return;
+  }
+
+  const runBtn = document.getElementById('runBtn');
+  runBtn.disabled = true;
+  runBtn.textContent = 'Simulating review…';
+
+  document.getElementById('pipelineSection').style.display = 'block';
+  document.getElementById('results').style.display = 'none';
+  initReviewerCards();
+  document.getElementById('activityLog').innerHTML = '';
+  document.getElementById('pipelineNote').textContent = 'Running simulated specialist passes (demo mode, offline)…';
+
+  logActivity('DEMO MODE session initialized — no network requests will be made', 'warn');
+  logActivity('Session brief — Instagram / Engagement / '+BRIEF.rigor, 'ok');
+
+  const hasImages = uploadedImages.length > 0;
+  const specialists = REVIEWERS.filter(r=>r.id!=='editor');
+  const specialistResults = {};
+  const seedBase = hashString(caption+context+uploadedImages.length);
+
+  for(const rev of specialists){
+    setReviewerStatus(rev.id,'active');
+    logActivity(`${rev.name} (simulated) starting review…`);
+    await wait(500 + (seedBase % 400)); // purely cosmetic pacing, no network involved
+
+    const { text, score } = generateSpecialistDemo(rev.id, caption, context, hasImages, seedBase);
+    specialistResults[rev.id] = { text, score };
+    setReviewerStatus(rev.id,'done');
+    logActivity(`${rev.name} (simulated) complete — placeholder score ${score}/100`, 'ok');
+  }
+
+  // Editor synthesis (also simulated, no network call)
+  const editor = REVIEWERS.find(r=>r.id==='editor');
+  setReviewerStatus('editor','active');
+  logActivity('Executive Editor (simulated) assembling final report…');
+  await wait(700);
+
+  const finalText = generateEditorDemo(caption, specialistResults, seedBase);
+  setReviewerStatus('editor','done');
+  logActivity('Executive Editor (simulated) complete — demo report assembled', 'ok');
+
+  renderResults(finalText, specialistResults, caption);
+  document.getElementById('pipelineNote').textContent = 'Simulated review complete — demo mode, no live model was called';
+  runBtn.disabled = false;
+  runBtn.textContent = 'Run Another Simulated Review →';
+  document.getElementById('results').style.display = 'block';
+  document.getElementById('results').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+/* ============ Render results ============ */
+function renderResults(finalText, specialistResults, originalCaption){
+  const overallRaw = extractSection(finalText, 'OVERALL_SCORE');
+  const overall = Math.max(0, Math.min(100, parseInt((overallRaw.match(/\d{1,3}/)||['70'])[0], 10)));
+  const verdict = extractSection(finalText, 'VERDICT') || 'Review complete';
+  const summary = extractSection(finalText, 'SUMMARY') || '';
+
+  // score ring
+  const circumference = 402;
+  const offset = circumference - (overall/100)*circumference;
+  document.getElementById('scoreCircle').style.strokeDashoffset = offset;
+  document.getElementById('scoreNum').textContent = overall;
+
+  let badgeColor = '#E8685D', badgeBg='#e8685d22', badgeLabel='Needs Work';
+  if(overall>=80){ badgeColor='#6FCF97'; badgeBg='#6fcf9722'; badgeLabel='Strong'; }
+  else if(overall>=60){ badgeColor='#E8A33D'; badgeBg='#e8a33d22'; badgeLabel='Promising'; }
+  const badge = document.getElementById('verdictBadge');
+  badge.textContent = badgeLabel;
+  badge.style.color = badgeColor;
+  badge.style.background = badgeBg;
+  document.getElementById('verdictHeadline').textContent = verdict;
+  document.getElementById('verdictSummary').textContent = summary;
+
+  // category grid from specialists
+  const cats = [
+    {label:'Hook & Copy', key:'hook'},
+    {label:'Visual Impact', key:'visual'},
+    {label:'Engagement Psychology', key:'psych'},
+    {label:'Platform & Algorithm Fit', key:'algo'}
+  ];
+  const catGrid = document.getElementById('catGrid');
+  catGrid.innerHTML = '';
+  cats.forEach(c=>{
+    const res = specialistResults[c.key];
+    const score = res.score ?? 0;
+    const reasonShort = (res.text||'').split('\n').filter(Boolean)[0] || '';
+    const div = document.createElement('div');
+    div.className = 'cat-card';
+    div.innerHTML = `
+      <div class="cat-top"><div class="cat-name">${c.label}</div><div class="cat-score">${score}</div></div>
+      <div class="bar-track"><div class="bar-fill" style="width:0%" data-w="${score}%"></div></div>
+      <div class="cat-reason">${escapeHtml(reasonShort.slice(0,220))}${reasonShort.length>220?'…':''}</div>
+    `;
+    catGrid.appendChild(div);
+  });
+  requestAnimationFrame(()=>{
+    document.querySelectorAll('.bar-fill').forEach(el=>{ el.style.width = el.dataset.w; });
+  });
+
+  // SWOT
+  fillList('listStrengths', extractSection(finalText,'STRENGTHS'));
+  fillList('listWeaknesses', extractSection(finalText,'WEAKNESSES'));
+  fillList('listOpportunities', extractSection(finalText,'OPPORTUNITIES'));
+  fillList('listRisks', extractSection(finalText,'PLATFORM_NOTES'));
+
+  // rewrite
+  document.getElementById('beforeText').textContent = originalCaption || '(no original caption provided)';
+  document.getElementById('afterText').textContent = extractSection(finalText,'REWRITE') || '—';
+  document.getElementById('rewriteReasoning').textContent = extractSection(finalText,'REWRITE_REASONING') || '—';
+
+  // hooks
+  const hookList = document.getElementById('hookList');
+  hookList.innerHTML = '';
+  linesToListItems(extractSection(finalText,'HOOKS')).forEach((h,i)=>{
+    const div = document.createElement('div');
+    div.className = 'hook-item';
+    div.innerHTML = `<span class="num">${i+1}</span>${escapeHtml(h)}`;
+    hookList.appendChild(div);
+  });
+
+  // checklist
+  const checklistList = document.getElementById('checklistList');
+  checklistList.innerHTML = '';
+  linesToListItems(extractSection(finalText,'CHECKLIST')).forEach(item=>{
+    const div = document.createElement('div');
+    div.className = 'check-item';
+    div.innerHTML = `<div class="cb"></div><div>${escapeHtml(item)}</div>`;
+    checklistList.appendChild(div);
+  });
+
+  // final report
+  document.getElementById('execSummary').textContent = extractSection(finalText,'EXEC_SUMMARY') || '—';
+  document.getElementById('healthReport').textContent = extractSection(finalText,'HEALTH_REPORT') || '—';
+
+  const impactList = document.getElementById('impactList');
+  impactList.innerHTML = '';
+  linesToListItems(extractSection(finalText,'IMPACT_IMPROVEMENTS')).forEach((item,i)=>{
+    const div = document.createElement('div');
+    div.className = 'check-item';
+    div.innerHTML = `<div class="cb" style="border-color:var(--amber);border-radius:50%;"></div><div><b style="color:var(--amber);">#${i+1}</b> ${escapeHtml(item)}</div>`;
+    impactList.appendChild(div);
+  });
+
+  const predictRow = document.getElementById('predictRow');
+  const lift = extractSection(finalText,'PREDICTED_ENGAGEMENT_LIFT') || '—';
+  const save = extractSection(finalText,'PREDICTED_SAVE_RATE') || '—';
+  const comment = extractSection(finalText,'PREDICTED_COMMENT_POTENTIAL') || '—';
+  predictRow.innerHTML = `
+    <div class="predict-metric"><div class="pm-label">Engagement Lift</div><div class="pm-val">${escapeHtml(lift)}</div></div>
+    <div class="predict-metric"><div class="pm-label">Save Rate Potential</div><div class="pm-val">${escapeHtml(save)}</div></div>
+    <div class="predict-metric"><div class="pm-label">Comment Potential</div><div class="pm-val">${escapeHtml(comment)}</div></div>
+  `;
+
+  const promptChips = document.getElementById('promptChips');
+  promptChips.innerHTML = '';
+  linesToListItems(extractSection(finalText,'DEEPER_PROMPTS')).forEach(p=>{
+    const div = document.createElement('div');
+    div.className = 'prompt-chip';
+    div.textContent = p;
+    div.onclick = ()=>{
+      document.getElementById('contextInput').value += (document.getElementById('contextInput').value?'\n':'') + 'Follow-up request: '+p;
+      document.getElementById('contextInput').scrollIntoView({behavior:'smooth', block:'center'});
+    };
+    promptChips.appendChild(div);
+  });
+}
+
+function fillList(id, block){
+  const ul = document.getElementById(id);
+  ul.innerHTML = '';
+  linesToListItems(block).forEach(item=>{
+    const li = document.createElement('li');
+    li.textContent = item;
+    ul.appendChild(li);
+  });
+}
+
+function escapeHtml(s){
+  return (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* ============ Tabs ============ */
+document.getElementById('tabs').addEventListener('click', (e)=>{
+  if(!e.target.classList.contains('tab-btn')) return;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  e.target.classList.add('active');
+  document.getElementById('tab-'+e.target.dataset.tab).classList.add('active');
+});
+
+</script>
+</body>
+</html>
