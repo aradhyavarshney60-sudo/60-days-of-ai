@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cloud Hosting Comparison — AWS vs GCP vs Azure vs DigitalOcean</title>
+<style>
+  :root{
+    --bg:#0f1420;
+    --panel:#161d2e;
+    --panel-2:#1c2438;
+    --border:#2a3450;
+    --text:#e7ecf7;
+    --muted:#93a0bd;
+    --accent:#5b8def;
+    --accent-2:#38d9c9;
+    --warn:#f5a524;
+    --danger:#f04b4b;
+    --good:#2fbf71;
+    --radius:14px;
+    font-family:"Segoe UI",Roboto,-apple-system,BlinkMacSystemFont,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:radial-gradient(1200px 600px at 10% -10%, #1a2340 0%, transparent 60%),
+               radial-gradient(1000px 500px at 100% 0%, #17233a 0%, transparent 55%),
+               var(--bg);
+    color:var(--text);
+    min-height:100vh;
+    padding:32px 20px 80px;
+  }
+  .wrap{max-width:1180px;margin:0 auto;}
+  header{margin-bottom:28px;}
+  header .eyebrow{
+    color:var(--accent-2);
+    font-size:12px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    font-weight:700;
+    margin-bottom:8px;
+  }
+  h1{font-size:clamp(24px,4vw,34px);margin:0 0 10px;line-height:1.15;}
+  .sub{color:var(--muted);max-width:680px;font-size:15px;line-height:1.6;}
+  .audience-pill{
+    display:inline-flex;align-items:center;gap:6px;
+    background:var(--panel-2);border:1px solid var(--border);
+    padding:6px 12px;border-radius:999px;font-size:12.5px;color:var(--muted);
+    margin-top:14px;
+  }
+  .audience-pill b{color:var(--text);}
+
+  .grid{
+    display:grid;
+    grid-template-columns: 300px 1fr;
+    gap:22px;
+    margin-top:26px;
+  }
+  @media (max-width:900px){ .grid{grid-template-columns:1fr;} }
+
+  .card{
+    background:linear-gradient(180deg,var(--panel),var(--panel-2));
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:20px;
+  }
+  .card h2{font-size:14px;margin:0 0 14px;letter-spacing:.03em;text-transform:uppercase;color:var(--muted);}
+
+  .weight-row{margin-bottom:18px;}
+  .weight-row:last-child{margin-bottom:0;}
+  .weight-label{display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;margin-bottom:6px;}
+  .weight-label span.val{color:var(--accent-2);font-variant-numeric:tabular-nums;font-weight:700;}
+  input[type=range]{
+    width:100%;
+    accent-color:var(--accent);
+    height:4px;
+  }
+  .weight-desc{font-size:11.5px;color:var(--muted);margin-top:4px;}
+  .reset-btn{
+    margin-top:16px;width:100%;
+    background:transparent;border:1px solid var(--border);color:var(--muted);
+    padding:9px 10px;border-radius:9px;cursor:pointer;font-size:12.5px;
+    transition:.15s;
+  }
+  .reset-btn:hover{border-color:var(--accent);color:var(--text);}
+
+  .presets{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px;}
+  .presets button{
+    flex:1 1 auto;
+    background:var(--panel-2);border:1px solid var(--border);color:var(--muted);
+    padding:7px 8px;border-radius:8px;cursor:pointer;font-size:11.5px;
+  }
+  .presets button:hover{border-color:var(--accent-2);color:var(--text);}
+
+  .results{display:flex;flex-direction:column;gap:12px;}
+  .rank-card{
+    background:linear-gradient(180deg,var(--panel),var(--panel-2));
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    padding:18px 20px;
+    display:grid;
+    grid-template-columns:44px 1fr 120px;
+    gap:16px;
+    align-items:center;
+    position:relative;
+    overflow:hidden;
+    transition:.25s ease;
+  }
+  .rank-card.top{border-color:var(--accent);box-shadow:0 0 0 1px rgba(91,141,239,.25), 0 10px 30px -14px rgba(91,141,239,.5);}
+  .rank-num{
+    font-size:22px;font-weight:800;color:var(--muted);
+    display:flex;align-items:center;justify-content:center;
+    width:40px;height:40px;border-radius:50%;
+    background:var(--panel-2);border:1px solid var(--border);
+  }
+  .rank-card.top .rank-num{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .rc-main .name-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .rc-main .name-row h3{margin:0;font-size:18px;}
+  .badge{
+    font-size:10.5px;padding:2px 8px;border-radius:999px;border:1px solid var(--border);
+    color:var(--muted);text-transform:uppercase;letter-spacing:.04em;
+  }
+  .badge.best-for{color:var(--accent-2);border-color:rgba(56,217,201,.35);background:rgba(56,217,201,.08);}
+  .rc-main .tagline{color:var(--muted);font-size:12.5px;margin-top:4px;}
+  .bars{margin-top:10px;display:flex;flex-direction:column;gap:6px;}
+  .bar-row{display:grid;grid-template-columns:96px 1fr 34px;align-items:center;gap:8px;font-size:11px;color:var(--muted);}
+  .bar-track{height:6px;background:#0e1420;border-radius:4px;overflow:hidden;border:1px solid var(--border);}
+  .bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--accent),var(--accent-2));}
+  .score-col{text-align:right;}
+  .score-big{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;}
+  .score-sub{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;}
+
+  .details-toggle{
+    grid-column:1/-1;
+    margin-top:6px;
+    background:none;border:none;color:var(--accent-2);
+    font-size:12px;cursor:pointer;text-align:left;padding:0;
+  }
+  .detail-table{
+    grid-column:1/-1;
+    display:none;
+    margin-top:10px;
+    border-top:1px dashed var(--border);
+    padding-top:12px;
+  }
+  .detail-table.open{display:block;}
+  .dt-row{display:grid;grid-template-columns:140px 1fr;gap:10px;font-size:12.5px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.03);}
+  .dt-row .dt-label{color:var(--muted);}
+  .dt-row .dt-val{color:var(--text);}
+  .est-flag{
+    display:inline-block;margin-left:6px;font-size:9.5px;padding:1px 6px;border-radius:5px;
+    background:rgba(245,165,36,.14);color:var(--warn);border:1px solid rgba(245,165,36,.35);
+    text-transform:uppercase;letter-spacing:.03em;
+  }
+
+  .panel-section{margin-top:34px;}
+  .collapsible{
+    background:linear-gradient(180deg,var(--panel),var(--panel-2));
+    border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;
+  }
+  .collapsible summary{
+    cursor:pointer;padding:16px 20px;font-weight:700;font-size:14.5px;
+    display:flex;justify-content:space-between;align-items:center;list-style:none;
+  }
+  .collapsible summary::-webkit-details-marker{display:none;}
+  .collapsible summary .chev{transition:.2s;color:var(--muted);font-size:13px;}
+  .collapsible[open] summary .chev{transform:rotate(90deg);}
+  .collapsible .content{padding:0 20px 20px;color:var(--muted);font-size:13.5px;line-height:1.7;}
+  .collapsible .content h4{color:var(--text);font-size:13px;margin:16px 0 6px;text-transform:uppercase;letter-spacing:.03em;}
+  .collapsible .content ul{margin:6px 0;padding-left:18px;}
+  .conflict-box{
+    background:rgba(245,165,36,.07);border:1px solid rgba(245,165,36,.25);
+    border-radius:10px;padding:12px 14px;margin:10px 0;font-size:12.5px;
+  }
+
+  .sources-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 20px;margin-top:8px;}
+  @media (max-width:700px){.sources-grid{grid-template-columns:1fr;}}
+  .source-item{
+    font-size:12.5px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.05);
+    display:flex;flex-direction:column;gap:2px;
+  }
+  .source-item a{color:var(--accent-2);text-decoration:none;word-break:break-all;}
+  .source-item a:hover{text-decoration:underline;}
+  .source-item .s-meta{color:var(--muted);font-size:11px;}
+
+  footer{margin-top:40px;color:var(--muted);font-size:11.5px;text-align:center;line-height:1.7;}
+  .empty-state{
+    text-align:center;padding:40px 20px;color:var(--muted);
+  }
+  .loading{
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    padding:60px 0;color:var(--muted);font-size:13.5px;
+  }
+  .spinner{
+    width:18px;height:18px;border-radius:50%;
+    border:2px solid var(--border);border-top-color:var(--accent);
+    animation:spin 0.8s linear infinite;
+  }
+  @keyframes spin{to{transform:rotate(360deg);}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">Compare &amp; Decide</div>
+    <h1>Cloud Hosting Providers: AWS vs Google Cloud vs Azure vs DigitalOcean</h1>
+    <div class="sub">Built for solo developers and startups picking a host for a new app, where cost and simplicity matter most. Adjust the weights on the left to match your priorities — the ranking updates live and is fully explainable.</div>
+    <div class="audience-pill">🎯 Optimized for: <b>Solo devs &amp; startups</b> choosing their first (or next) production host</div>
+  </header>
+
+  <div id="app-root">
+    <div class="loading" id="loadingState"><div class="spinner"></div> Loading comparison data…</div>
+  </div>
+
+  <div class="panel-section">
+    <details class="collapsible" id="researchPanel">
+      <summary>How this was researched <span class="chev">▶</span></summary>
+      <div class="content">
+        <p>Every number in this tool was pulled from a named, dated source — nothing here is invented. Two categories of figures appear:</p>
+        <h4>Directly sourced facts</h4>
+        <p>Entry-level pricing (official/verified pricing trackers), free-tier terms (vendor free-tier pages and 2026 free-tier guides), and ease-of-use / support-quality numbers (G2 review aggregates, which are real, verified-user survey scores out of 10) are quoted as published. Where sources gave slightly different figures for the same instance (see conflicts below), the most recent, most-corroborated figure was used and the discrepancy is noted.</p>
+        <h4>Calculated / editorial figures — flagged in the UI</h4>
+        <p>The 0–100 "Free Tier Generosity" score is <b>not</b> a number any source publishes directly — G2 and vendor pages don't score free tiers numerically. It's an editorial synthesis built from sourced facts (permanence of the free compute, credit duration, credit value, and monthly hour caps), scored on a transparent rubric explained in each provider's detail panel. It is clearly flagged as an estimate everywhere it appears, per the request that synthetic scores never be presented as sourced fact.</p>
+        <h4>Conflicts found &amp; how they were resolved</h4>
+        <div class="conflict-box">
+          <b>AWS EC2 free tier:</b> Sources disagree because AWS changed its policy on July 15, 2025. Accounts created before that date get 750 hrs/month of t2.micro/t3.micro for 12 months; accounts created after get a $200 credit valid for 6 months instead. We report the current (post–July 2025) policy since that's what a new signup gets today, and note the legacy terms in the detail panel.
+        </div>
+        <div class="conflict-box">
+          <b>Google Cloud e2-micro on-demand price:</b> Sources ranged from "~$20/month" to "$20.16/month" for the same 0.028/hr rate. We used the more precise $20.16/month (0.028 × 720 hours) and treat the rounder figures as consistent with it, not a conflict.
+        </div>
+        <div class="conflict-box">
+          <b>G2 "Ease of Use" and "Quality of Support" scores:</b> These vary slightly (by ±0.1–0.2) depending on which competitor a product is being compared against on G2, because G2's comparison pages recompute against the review pool relevant to that pairing. We used the score from the comparison with the largest review sample size (n) for each provider to minimize sampling noise, and cite that specific comparison page.
+        </div>
+        <h4>What we deliberately left out</h4>
+        <p>We did not include "global region availability," "uptime SLA," or "reliability guarantee" as scored criteria in this build — those weren't selected as priority criteria for this comparison's intended audience (solo devs/startups optimizing for cost and simplicity). Numbers for those categories were not researched and are not represented anywhere in this tool.</p>
+      </div>
+    </details>
+  </div>
+
+  <div class="panel-section">
+    <details class="collapsible" id="sourcesPanel">
+      <summary>Sources &amp; citations (<span id="sourceCount">0</span>) <span class="chev">▶</span></summary>
+      <div class="content">
+        <p>Every data point above traces back to one of these sources. Figures were verified between May–August 2026; cloud pricing changes frequently, so confirm current rates on the vendor's official pricing page before making a purchase decision.</p>
+        <div class="sources-grid" id="sourcesGrid"></div>
+      </div>
+    </details>
+  </div>
+
+  <footer>
+    This tool is for research and decision-support purposes only — not a purchase recommendation or financial advice.<br>
+    Pricing and review data verified May–August 2026 from the sources above. Cloud pricing changes frequently — always confirm current rates on the provider's official pricing page before committing.<br>
+    Built with the Compare &amp; Decide Builder · No external libraries · All data cited.
+  </footer>
+
+</div>
+
+<script>
+/* ============================= DATA ============================= */
+/* Every field marked isEstimate:true is a calculated/editorial score, not a directly-quoted source figure. */
+
+const PROVIDERS = [
+  {
+    id: "aws",
+    name: "AWS (Amazon EC2)",
+    tagline: "Deepest service catalog, steepest learning curve.",
+    bestFor: null,
+    criteria: {
+      pricing: {
+        value: 7.59,
+        display: "$7.59/mo",
+        detail: "t3.micro, on-demand, us-east-1 — the cheapest general-purpose burstable instance AWS offers.",
+        isEstimate: false,
+        sourceIds: ["usageai-t2t3", "costbench-aws"]
+      },
+      freeTier: {
+        value: 42,
+        display: "Editorial score: 42/100",
+        detail: "New accounts (created after July 15, 2025) get a $200 credit valid for 6 months — no permanent free compute. Legacy accounts (pre–July 2025) got 750 hrs/mo of t2.micro/t3.micro free for 12 months, which scored higher, but that offer no longer applies to new signups.",
+        isEstimate: true,
+        sourceIds: ["usageai-ec2-pricing", "costbench-aws"]
+      },
+      easeOfUse: {
+        value: 8.6,
+        display: "8.6 / 10",
+        detail: "G2 \"Ease of Use\" score for Amazon EC2, from the EC2-vs-Amazon-RDS comparison (n=982 reviews) — the largest sample among EC2's G2 comparisons.",
+        isEstimate: false,
+        sourceIds: ["g2-ec2-rds"]
+      },
+      docsSupport: {
+        value: 8.7,
+        display: "8.7 / 10",
+        detail: "G2 \"Quality of Support\" score for Amazon EC2 (n=938 reviews), from the EC2-vs-S3 comparison page. Reviewers repeatedly cite AWS's extensive documentation and active community as a strength.",
+        isEstimate: false,
+        sourceIds: ["g2-ec2-s3", "g2-ec2-reviews"]
+      }
+    }
+  },
+  {
+    id: "gcp",
+    name: "Google Cloud (Compute Engine)",
+    tagline: "Only major cloud with a permanent free VM.",
+    bestFor: "best free tier",
+    criteria: {
+      pricing: {
+        value: 20.16,
+        display: "$20.16/mo",
+        detail: "e2-micro, on-demand ($0.028/hr × 720 hrs), us-central1. Free within Always Free limits in 3 US regions, so most solo devs never actually pay this.",
+        isEstimate: false,
+        sourceIds: ["cdcalc-gcp", "usageai-gce"]
+      },
+      freeTier: {
+        value: 88,
+        display: "Editorial score: 88/100",
+        detail: "GCP is the only major provider offering a permanently free VM (1 non-preemptible e2-micro, forever, in us-west1/us-central1/us-east1), plus a $300 / 90-day trial credit and 20+ other Always Free quotas (Cloud Run 2M requests/mo, BigQuery 1TB queries/mo). Scored highest for permanence.",
+        isEstimate: true,
+        sourceIds: ["cloud-google-free", "agentdeals-gcp"]
+      },
+      easeOfUse: {
+        value: 8.6,
+        display: "8.6 / 10",
+        detail: "G2 \"Ease of Use\" score for Google Compute Engine, from the GCE-vs-Oracle-Linux comparison (n=496 reviews).",
+        isEstimate: false,
+        sourceIds: ["g2-gce-oracle"]
+      },
+      docsSupport: {
+        value: 8.5,
+        display: "8.5 / 10",
+        detail: "G2 \"Quality of Support\" score for Google Compute Engine — consistent at 8.5 across multiple G2 comparison pages (vs nOps, vs OpenNebula, vs IBM Cloudability).",
+        isEstimate: false,
+        sourceIds: ["g2-gce-nops", "g2-gce-opennebula"]
+      }
+    }
+  },
+  {
+    id: "azure",
+    name: "Microsoft Azure (Virtual Machines)",
+    tagline: "Best fit if you're already in the Microsoft ecosystem.",
+    bestFor: null,
+    criteria: {
+      pricing: {
+        value: 7.59,
+        display: "$7.59/mo",
+        detail: "B1s VM (1 vCPU, 1GB RAM), pay-as-you-go — Azure's cheapest general-purpose burstable instance, matching AWS's t3.micro price.",
+        isEstimate: false,
+        sourceIds: ["cloudprice-b1s", "kuberns-azure"]
+      },
+      freeTier: {
+        value: 55,
+        display: "Editorial score: 55/100",
+        detail: "750 hrs/mo of B1s VMs free for 12 months (enough for 2 simultaneous VMs — one Linux, one Windows), plus a $200 credit for 30 days and permanent Always Free services like Cosmos DB (1,000 RU/s). Scored above AWS's current offer (no free VM) but below GCP's permanent free VM.",
+        isEstimate: true,
+        sourceIds: ["agentdeals-azure", "costbench-azure"]
+      },
+      easeOfUse: {
+        value: 8.6,
+        display: "8.6 / 10",
+        detail: "G2 \"Ease of Use\" score for Azure Virtual Machines, from the Azure-vs-IBM-PowerVM comparison (n=334 reviews) — the largest sample among Azure VM's G2 comparisons.",
+        isEstimate: false,
+        sourceIds: ["g2-azure-ibmpower"]
+      },
+      docsSupport: {
+        value: 8.3,
+        display: "8.3 / 10",
+        detail: "G2 \"Quality of Support\" score for Azure Virtual Machines (n=321 reviews), from the Azure-vs-IBM-PowerVM comparison — the largest sample among its comparisons.",
+        isEstimate: false,
+        sourceIds: ["g2-azure-ibmpower"]
+      }
+    }
+  },
+  {
+    id: "do",
+    name: "DigitalOcean (Droplets)",
+    tagline: "Flat, predictable pricing built for indie developers.",
+    bestFor: "easiest to use",
+    criteria: {
+      pricing: {
+        value: 4,
+        display: "$4/mo",
+        detail: "Basic Droplet (512MB RAM, 1 vCPU) — the cheapest entry point of any of the four providers, all-inclusive (bandwidth bundled, not billed separately).",
+        isEstimate: false,
+        sourceIds: ["costbench-do", "kuberns-do"]
+      },
+      freeTier: {
+        value: 30,
+        display: "Editorial score: 30/100",
+        detail: "No permanent free compute tier. New accounts get $200 in credit for 60 days only (shorter window than AWS's 6mo or Azure's 12mo free VM). Scored lowest on pure free-tier generosity, despite otherwise strong value.",
+        isEstimate: true,
+        sourceIds: ["agentdeals-do", "costbench-do-free"]
+      },
+      easeOfUse: {
+        value: 9.3,
+        display: "9.3 / 10",
+        detail: "G2 \"Ease of Use\" score for DigitalOcean (n=634 reviews), from the DigitalOcean-vs-Northflank comparison — the highest ease-of-use score of all four providers.",
+        isEstimate: false,
+        sourceIds: ["g2-do-northflank"]
+      },
+      docsSupport: {
+        value: 8.6,
+        display: "8.6 / 10",
+        detail: "G2 \"Quality of Support\" score for DigitalOcean (n=528 reviews), from the DigitalOcean-vs-Northflank comparison.",
+        isEstimate: false,
+        sourceIds: ["g2-do-northflank"]
+      }
+    }
+  }
+];
+
+const CRITERIA_META = {
+  pricing:     { label: "Entry Pricing",    unit: "$/mo lower=better", defaultWeight: 30, higherIsBetter: false, desc: "Cheapest general-purpose VM, on-demand, per month" },
+  freeTier:    { label: "Free Tier",        unit: "0–100 editorial",   defaultWeight: 25, higherIsBetter: true,  desc: "How generous & permanent the free offering is" },
+  easeOfUse:   { label: "Ease of Use",      unit: "G2 score /10",      defaultWeight: 25, higherIsBetter: true,  desc: "Real-user G2 ease-of-use rating" },
+  docsSupport: { label: "Docs & Support",   unit: "G2 score /10",      defaultWeight: 20, higherIsBetter: true,  desc: "Documentation quality & community/vendor support" }
+};
+
+const SOURCES = [
+  { id:"usageai-t2t3", title:"EC2 t2 vs t3 Pricing — Verified May 2026", domain:"usage.ai", url:"https://www.usage.ai/blogs/ec2-t2-vs-t3/" },
+  { id:"usageai-ec2-pricing", title:"AWS EC2 Pricing Guide (2026)", domain:"usage.ai", url:"https://www.usage.ai/blogs/aws/ec2/pricing/" },
+  { id:"costbench-aws", title:"AWS Pricing 2026: Free Tier to $50,000/month", domain:"costbench.com", url:"https://costbench.com/software/cloud-infrastructure/aws/" },
+  { id:"g2-ec2-rds", title:"G2: Amazon EC2 vs Amazon RDS comparison", domain:"g2.com", url:"https://www.g2.com/compare/amazon-ec2-vs-amazon-relational-database-service-rds" },
+  { id:"g2-ec2-s3", title:"G2: Amazon EC2 vs Amazon S3 comparison", domain:"g2.com", url:"https://www.g2.com/compare/amazon-ec2-vs-amazon-simple-storage-service-s3" },
+  { id:"g2-ec2-reviews", title:"G2: Amazon EC2 Reviews", domain:"g2.com", url:"https://www.g2.com/products/amazon-ec2/reviews" },
+  { id:"cdcalc-gcp", title:"GCP Calculator 2026 | Google Cloud Pricing Estimator", domain:"cdcalculators.com", url:"https://cdcalculators.com/gcp-calculator/" },
+  { id:"usageai-gce", title:"How to Optimize Google Compute Engine Pricing (2026)", domain:"usage.ai", url:"https://www.usage.ai/blogs/gcp/compute-engine/" },
+  { id:"cloud-google-free", title:"Free Trial and Free Tier Services and Products", domain:"cloud.google.com", url:"https://cloud.google.com/free" },
+  { id:"agentdeals-gcp", title:"GCP Free Tier Complete Guide 2026", domain:"agentdeals.dev", url:"https://agentdeals.dev/gcp-free-tier-2026" },
+  { id:"g2-gce-oracle", title:"G2: Google Compute Engine vs Oracle Linux comparison", domain:"g2.com", url:"https://www.g2.com/compare/google-compute-engine-vs-oracle-linux" },
+  { id:"g2-gce-nops", title:"G2: Google Compute Engine vs nOps comparison", domain:"g2.com", url:"https://www.g2.com/compare/google-compute-engine-vs-nops" },
+  { id:"g2-gce-opennebula", title:"G2: Google Compute Engine vs OpenNebula comparison", domain:"g2.com", url:"https://www.g2.com/compare/google-compute-engine-vs-opennebula" },
+  { id:"cloudprice-b1s", title:"Standard_B1s specs and pricing", domain:"cloudprice.net", url:"https://cloudprice.net/vm/Standard_B1s" },
+  { id:"kuberns-azure", title:"Azure Pricing in 2026: Plans, VM Costs and What You Pay", domain:"kuberns.com", url:"https://kuberns.com/blogs/azure-pricing/" },
+  { id:"agentdeals-azure", title:"Azure Free Tier Complete Guide 2026", domain:"agentdeals.dev", url:"https://agentdeals.dev/azure-free-tier-2026" },
+  { id:"costbench-azure", title:"Microsoft Azure Pricing 2026: VMs from $7.59-$70.08/month", domain:"costbench.com", url:"https://costbench.com/software/cloud-infrastructure/azure/" },
+  { id:"g2-azure-ibmpower", title:"G2: Azure Virtual Machines vs IBM Power VM comparison", domain:"g2.com", url:"https://www.g2.com/compare/azure-virtual-machines-vs-ibm-power-vm" },
+  { id:"costbench-do", title:"DigitalOcean Pricing 2026: Droplets from $4/month", domain:"costbench.com", url:"https://costbench.com/software/cloud-infrastructure/digitalocean/" },
+  { id:"kuberns-do", title:"DigitalOcean Pricing 2026: Plans, Costs and Alternatives", domain:"kuberns.com", url:"https://kuberns.com/blogs/digitalocean-pricing/" },
+  { id:"agentdeals-do", title:"DigitalOcean Free Tier Complete Guide 2026", domain:"agentdeals.dev", url:"https://agentdeals.dev/digitalocean-free-tier-2026" },
+  { id:"costbench-do-free", title:"Is DigitalOcean Free? Trial Details & What's Included (2026)", domain:"costbench.com", url:"https://costbench.com/software/cloud-infrastructure/digitalocean/free-plan/" },
+  { id:"g2-do-northflank", title:"G2: DigitalOcean vs Northflank comparison", domain:"g2.com", url:"https://www.g2.com/compare/digitalocean-vs-northflank" }
+];
+
+/* ============================= STATE ============================= */
+let weights = {};
+Object.keys(CRITERIA_META).forEach(k => weights[k] = CRITERIA_META[k].defaultWeight);
+let openDetailIds = new Set();
+
+/* ============================= RENDER ============================= */
+function normalizedScore(providerId, key){
+  const meta = CRITERIA_META[key];
+  const vals = PROVIDERS.map(p => p.criteria[key].value);
+  const min = Math.min(...vals), max = Math.max(...vals);
+  const raw = PROVIDERS.find(p=>p.id===providerId).criteria[key].value;
+  if(max === min) return 100;
+  let norm = (raw - min) / (max - min); // 0..1, higher raw = higher norm
+  if(!meta.higherIsBetter) norm = 1 - norm; // invert for "lower is better" (pricing)
+  return Math.round(norm * 1000)/10; // one decimal
+}
+
+function computeResults(){
+  const totalWeight = Object.values(weights).reduce((a,b)=>a+b,0) || 1;
+  return PROVIDERS.map(p => {
+    let weighted = 0;
+    Object.keys(CRITERIA_META).forEach(key=>{
+      const score = normalizedScore(p.id, key);
+      weighted += score * (weights[key] / totalWeight);
+    });
+    return { provider: p, score: Math.round(weighted*10)/10 };
+  }).sort((a,b)=> b.score - a.score);
+}
+
+function renderWeights(){
+  const el = document.getElementById('weightsPanel');
+  if(!el) return;
+  el.innerHTML = Object.keys(CRITERIA_META).map(key=>{
+    const meta = CRITERIA_META[key];
+    return `
+      <div class="weight-row">
+        <div class="weight-label">
+          <span>${meta.label}</span>
+          <span class="val" id="val-${key}">${weights[key]}%</span>
+        </div>
+        <input type="range" min="0" max="100" step="1" value="${weights[key]}" data-key="${key}" class="weight-slider">
+        <div class="weight-desc">${meta.desc}</div>
+      </div>
+    `;
+  }).join('');
+  document.querySelectorAll('.weight-slider').forEach(slider=>{
+    slider.addEventListener('input', (e)=>{
+      const key = e.target.dataset.key;
+      weights[key] = parseInt(e.target.value,10);
+      document.getElementById('val-'+key).textContent = weights[key] + '%';
+      renderResults();
+    });
+  });
+}
+
+function applyPreset(name){
+  if(name === 'cost'){ weights = {pricing:55, freeTier:30, easeOfUse:8, docsSupport:7}; }
+  else if(name === 'beginner'){ weights = {pricing:15, freeTier:20, easeOfUse:45, docsSupport:20}; }
+  else if(name === 'balanced'){ Object.keys(CRITERIA_META).forEach(k=>weights[k]=CRITERIA_META[k].defaultWeight); }
+  renderWeights();
+  renderResults();
+}
+
+function fmtScoreBar(providerId, key){
+  const meta = CRITERIA_META[key];
+  const score = normalizedScore(providerId, key);
+  return `<div class="bar-row">
+    <span>${meta.label}</span>
+    <span class="bar-track"><span class="bar-fill" style="width:${score}%"></span></span>
+    <span>${score}</span>
+  </div>`;
+}
+
+function renderResults(){
+  const container = document.getElementById('resultsPanel');
+  if(!container) return;
+
+  const totalWeight = Object.values(weights).reduce((a,b)=>a+b,0);
+  if(totalWeight === 0){
+    container.innerHTML = `<div class="card empty-state">All weights are set to 0 — nothing to rank.<br>Move at least one slider above 0% to see results.</div>`;
+    return;
+  }
+
+  const results = computeResults();
+
+  container.innerHTML = results.map((r, idx) => {
+    const p = r.provider;
+    const isOpen = openDetailIds.has(p.id);
+    return `
+    <div class="rank-card ${idx===0 ? 'top' : ''}">
+      <div class="rank-num">${idx+1}</div>
+      <div class="rc-main">
+        <div class="name-row">
+          <h3>${p.name}</h3>
+          ${p.bestFor ? `<span class="badge best-for">★ ${p.bestFor}</span>` : ''}
+        </div>
+        <div class="tagline">${p.tagline}</div>
+        <div class="bars">
+          ${Object.keys(CRITERIA_META).map(key=>fmtScoreBar(p.id,key)).join('')}
+        </div>
+        <button class="details-toggle" data-id="${p.id}">${isOpen ? '▾ Hide sourced data' : '▸ Show sourced data'}</button>
+      </div>
+      <div class="score-col">
+        <div class="score-big">${r.score}</div>
+        <div class="score-sub">weighted score</div>
+      </div>
+      <div class="detail-table ${isOpen ? 'open' : ''}">
+        ${Object.keys(CRITERIA_META).map(key=>{
+          const c = p.criteria[key];
+          const srcLinks = c.sourceIds.map(sid=>{
+            const s = SOURCES.find(s=>s.id===sid);
+            return s ? `<a href="${s.url}" target="_blank" rel="noopener">${s.domain}</a>` : '';
+          }).join(', ');
+          return `<div class="dt-row">
+            <div class="dt-label">${CRITERIA_META[key].label}</div>
+            <div class="dt-val">
+              <b>${c.display}</b> ${c.isEstimate ? '<span class="est-flag">Editorial estimate</span>' : ''}
+              <div style="color:var(--muted);margin-top:3px;">${c.detail}</div>
+              <div style="color:var(--accent-2);margin-top:3px;font-size:11.5px;">Source: ${srcLinks}</div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+
+  container.querySelectorAll('.details-toggle').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const id = btn.dataset.id;
+      if(openDetailIds.has(id)) openDetailIds.delete(id); else openDetailIds.add(id);
+      renderResults();
+    });
+  });
+}
+
+function renderSources(){
+  const grid = document.getElementById('sourcesGrid');
+  const count = document.getElementById('sourceCount');
+  if(!grid) return;
+  count.textContent = SOURCES.length;
+  grid.innerHTML = SOURCES.map(s=>`
+    <div class="source-item">
+      <a href="${s.url}" target="_blank" rel="noopener">${s.title}</a>
+      <span class="s-meta">${s.domain}</span>
+    </div>
+  `).join('');
+}
+
+function renderApp(){
+  const root = document.getElementById('app-root');
+  try{
+    if(!PROVIDERS || PROVIDERS.length === 0){
+      root.innerHTML = `<div class="card empty-state">No comparison data is available right now.</div>`;
+      return;
+    }
+    root.innerHTML = `
+      <div class="grid">
+        <div class="card">
+          <h2>Adjust Your Priorities</h2>
+          <div id="weightsPanel"></div>
+          <div class="presets">
+            <button data-preset="balanced">Balanced</button>
+            <button data-preset="cost">Cost-first</button>
+            <button data-preset="beginner">Beginner-first</button>
+          </div>
+          <button class="reset-btn" id="resetBtn">Reset to defaults</button>
+        </div>
+        <div class="results" id="resultsPanel"></div>
+      </div>
+    `;
+    renderWeights();
+    renderResults();
+
+    document.querySelectorAll('.presets button').forEach(btn=>{
+      btn.addEventListener('click', ()=> applyPreset(btn.dataset.preset));
+    });
+    document.getElementById('resetBtn').addEventListener('click', ()=> applyPreset('balanced'));
+  }catch(err){
+    root.innerHTML = `<div class="card empty-state">Something went wrong rendering the comparison (${err.message}). Try refreshing.</div>`;
+    console.error(err);
+  }
+}
+
+/* Simulate a brief, honest loading state before render */
+window.addEventListener('DOMContentLoaded', ()=>{
+  setTimeout(()=>{
+    renderApp();
+    renderSources();
+  }, 220);
+});
+</script>
+</body>
+</html>
