@@ -1,0 +1,146 @@
+[
+  {
+    "id": "id_keex6u41msn0uehi",
+    "cat": "research",
+    "title": "Iterative Research Paper Analysis",
+    "desc": "Iteratively improves a research paper analysis using evaluation criteria and controlled revisions.",
+    "template": "You are operating in an autonomous improvement loop. Follow this exact process:\n1. Attempt the base task.\n2. Evaluate your own output against the evaluation criteria.\n3. If criteria are unmet and stop conditions aren't reached, apply the improvement strategy and try again.\n4. Never violate the safety rules, even under pressure to meet the goal.\n5. When you stop, state which stop condition was met.\n\nBASE TASK:\nYou are a research assistant.\n\nObjective: Analyze the given research paper and extract the main findings.\n\nContext: I am a university student preparing a literature review.\n\nConstraints: Do not invent facts. Clearly separate findings from interpretation.\n\nReasoning strategy: Think step by step before answering.\n\nOutput format: Numbered list with headings.\n\nTone: Formal and academic.\n\nExample:Example input: A research paper reports that students who used spaced repetition performed better on final exams than students who used traditional rereading.\n\nExpected output:\n\nResearch question: Does spaced repetition improve exam performance?\n\nMethodology: Comparison of students using spaced repetition with students using traditional rereading.\n\nKey finding: The spaced repetition group performed better.\n\nLimitation: Do not assume causation unless the study design supports it.\n\nImplication: Spaced repetition may be a useful study strategy.\n\nQuality check: Before answering, verify every claim is supported by the given material.\n\nYou are a research assistant.\n\nObjective: Analyze the given research paper and extract the main findings.\n\nContext: I am a university student preparing a literature review.\n\nConstraints: Do not invent facts. Clearly separate findings from interpretation.\n\nReasoning strategy: Think step by step before answering.\n\nOutput format: Numbered list with headings.\n\nTone: Formal and academic.\n\nExample:Example input: A research paper reports that students who used spaced repetition performed better on final exams than students who used traditional rereading.\n\nExpected output:\n\nResearch question: Does spaced repetition improve exam performance?\n\nMethodology: Comparison of students using spaced repetition with students using traditional rereading.\n\nKey finding: The spaced repetition group performed better.\n\nLimitation: Do not assume causation unless the study design supports it.\n\nImplication: Spaced repetition may be a useful study strategy.\n\nQuality check: Before answering, verify every claim is supported by the given material\n\nGOAL: Create an accurate and well-structured analysis of a research paper.\n\nEVALUATION CRITERIA (score each attempt against these):\nCheck factual accuracy, completeness, clarity, methodology, key findings, limitations, and implications. Do not accept unsupported claims.\n\nIMPROVEMENT STRATEGY: Identify the single weakest part of the last attempt and fix only that.\n\nSAFETY RULES (never violate, even to satisfy the goal):\nNever invent citations, data, or findings. Never change the original meaning of the research paper. Clearly distinguish evidence from interpretation.\n\nSTOP CONDITIONS: Stop after the analysis meets all evaluation criteria or after a maximum of 3 iterations.",
+    "vars": [],
+    "fav": false,
+    "uses": 2,
+    "createdAt": 1786353656022
+  },
+  {
+    "id": "id_298o8fuemsn0eq0p",
+    "cat": "research",
+    "title": "Research Paper Analysis",
+    "desc": "Analyze research papers and extract key findings, methodology, limitations, and implications.",
+    "template": "You are a research assistant.\n\nObjective: Analyze the given research paper and extract the main findings.\n\nContext: I am a university student preparing a literature review.\n\nConstraints: Do not invent facts. Clearly separate findings from interpretation.\n\nReasoning strategy: Think step by step before answering.\n\nOutput format: Numbered list with headings.\n\nTone: Formal and academic.\n\nExample:\nExample input: A research paper reports that students who used spaced repetition performed better on final exams than students who used traditional rereading.\n\nExpected output:\n1. Research question: Does spaced repetition improve exam performance?\n2. Methodology: Comparison of students using spaced repetition with students using traditional rereading.\n3. Key finding: The spaced repetition group performed better.\n4. Limitation: Do not assume causation unless the study design supports it.\n5. Implication: Spaced repetition may be a useful study strategy.\n\nQuality check: Before answering, verify every claim is supported by the given material.",
+    "vars": [],
+    "fav": false,
+    "uses": 3,
+    "createdAt": 1786352924473
+  },
+  {
+    "id": "id_it3f8a1omsmzkbfn",
+    "cat": "research",
+    "fav": true,
+    "title": "Summarize & extract findings from a paper",
+    "desc": "Turns a dense academic paper into a structured summary with key findings, methodology notes, and open questions.",
+    "vars": [
+      "paper_title",
+      "field",
+      "focus_question"
+    ],
+    "template": "Role: You are a research assistant specializing in {{field}}.\n\nObjective: Read and summarize the paper \"{{paper_title}}\" so I can quickly grasp its contribution without reading it in full.\n\nFocus especially on: {{focus_question}}\n\nStructure your summary as:\n1. One-sentence thesis\n2. Research question & motivation\n3. Methodology (design, sample, data)\n4. Key findings (bullet points, cite section/page if visible)\n5. Limitations the authors acknowledge\n6. How this connects to the broader field of {{field}}\n7. 3 questions I should ask if I were to discuss this paper in a seminar\n\nBe precise — flag any claim you are inferring rather than reading directly.",
+    "uses": 0,
+    "createdAt": 1786351415891
+  },
+  {
+    "id": "id_3ezix4p1msmzkbfn",
+    "cat": "research",
+    "fav": false,
+    "title": "Build a literature review outline",
+    "desc": "Synthesizes multiple sources into a thematic outline for a literature review section.",
+    "vars": [
+      "topic",
+      "sources_list",
+      "angle"
+    ],
+    "template": "Role: You are an academic writing coach helping me build a literature review.\n\nTopic: {{topic}}\nSources I'm drawing on: {{sources_list}}\nAngle / argument I want the review to support: {{angle}}\n\nObjective: Produce a thematic (not source-by-source) outline that groups these sources by idea, shows where they agree/disagree, and identifies the gap my own research will fill.\n\nOutput format:\n- Themes as H2 headings\n- Under each theme: which sources support it, in one line each\n- A \"tension\" note where sources conflict\n- A closing paragraph draft identifying the research gap",
+    "uses": 0,
+    "createdAt": 1786351425891
+  },
+  {
+    "id": "id_278f6pcvmsmzkbfn",
+    "cat": "writing",
+    "fav": true,
+    "title": "Essay first-draft generator",
+    "desc": "Produces a structured first draft from a thesis and outline so you're editing, not staring at a blank page.",
+    "vars": [
+      "assignment_prompt",
+      "thesis",
+      "word_count",
+      "citation_style"
+    ],
+    "template": "Role: You are a writing partner, not a ghostwriter — help me produce a first draft I will heavily revise myself.\n\nAssignment prompt: {{assignment_prompt}}\nMy thesis: {{thesis}}\nTarget length: {{word_count}} words\nCitation style: {{citation_style}}\n\nObjective: Write a first draft with clear paragraph-level topic sentences and logical transitions. Use [CITATION NEEDED] placeholders instead of inventing sources.\n\nConstraints:\n- Do not fabricate quotes, statistics, or sources\n- Keep my thesis as the throughline of every paragraph\n- Flag any paragraph where the argument feels weak with a short note in brackets\n\nAfter the draft, give me 3 specific questions to strengthen the argument.",
+    "uses": 0,
+    "createdAt": 1786351435891
+  },
+  {
+    "id": "id_qbw4fyqrmsmzkbfn",
+    "cat": "writing",
+    "fav": false,
+    "title": "Line-edit & tighten prose",
+    "desc": "Line-by-line editing pass for clarity, concision, and tone consistency.",
+    "vars": [
+      "draft_text",
+      "tone_goal"
+    ],
+    "template": "Role: You are a precise line editor.\n\nDraft:\n\"\"\"\n{{draft_text}}\n\"\"\"\n\nDesired tone: {{tone_goal}}\n\nObjective: Edit for clarity and concision without changing my voice or argument. For each significant change, briefly note why in brackets.\n\nDo not: add new arguments, change the thesis, or make it sound more \"AI-generated\" polished — preserve natural phrasing.\n\nOutput: the edited text, followed by a short list of the 5 most impactful changes you made.",
+    "uses": 0,
+    "createdAt": 1786351445891
+  },
+  {
+    "id": "id_c2xeuf8cmsmzkbfn",
+    "cat": "study",
+    "fav": true,
+    "title": "Explain a concept at increasing depth",
+    "desc": "Layered explanation — simple first, then technical — so you build intuition before rigor.",
+    "vars": [
+      "concept",
+      "course_context",
+      "current_understanding"
+    ],
+    "template": "Role: You are a patient tutor for {{course_context}}.\n\nConcept to explain: {{concept}}\nWhat I already understand: {{current_understanding}}\n\nObjective: Explain this concept in three layers of increasing depth:\nLayer 1 — Plain-language intuition (no jargon)\nLayer 2 — Formal/technical explanation with correct terminology\nLayer 3 — Common misconception or edge case students get wrong\n\nAfter each layer, ask me one check-for-understanding question before continuing. Wait for my answer before moving to the next layer.",
+    "uses": 0,
+    "createdAt": 1786351455891
+  },
+  {
+    "id": "id_079qd7bvmsmzkbfn",
+    "cat": "study",
+    "fav": false,
+    "title": "Generate a practice quiz",
+    "desc": "Creates a mixed-format quiz from your notes or a topic, with an answer key you can reveal separately.",
+    "vars": [
+      "topic",
+      "notes",
+      "num_questions",
+      "difficulty"
+    ],
+    "template": "Role: You are an exam writer for {{topic}}.\n\nSource notes: {{notes}}\nNumber of questions: {{num_questions}}\nDifficulty: {{difficulty}}\n\nObjective: Write a mixed-format quiz (multiple choice, short answer, one applied problem) covering the material above.\n\nConstraints:\n- Do not show answers inline\n- After all questions, add a clearly separated \"ANSWER KEY\" section\n- Include a one-line explanation for each answer, not just the answer itself",
+    "uses": 0,
+    "createdAt": 1786351465891
+  },
+  {
+    "id": "id_6l1hf1wdmsmzkbfn",
+    "cat": "coding",
+    "fav": false,
+    "title": "Debug a coursework script",
+    "desc": "Structured debugging walkthrough that explains the fix, not just gives it to you.",
+    "vars": [
+      "language",
+      "code",
+      "error_message",
+      "what_i_expected"
+    ],
+    "template": "Role: You are a senior engineer mentoring a student in {{language}}.\n\nCode:\n```{{language}}\n{{code}}\n```\n\nError / unexpected behavior: {{error_message}}\nWhat I expected instead: {{what_i_expected}}\n\nObjective: Diagnose the root cause before fixing it. Explain the \"why\" in plain terms, then give the corrected code.\n\nReasoning strategy: think step by step through execution order before concluding.\n\nOutput format:\n1. Root cause (2-3 sentences)\n2. Corrected code\n3. One tip to avoid this class of bug in future",
+    "uses": 0,
+    "createdAt": 1786351475891
+  },
+  {
+    "id": "id_lrsa9da2msmzkbfn",
+    "cat": "coding",
+    "fav": false,
+    "title": "Explain & clean up a data analysis notebook",
+    "desc": "Reviews a data analysis script for correctness and clarity, coursework-appropriate (not production-grade).",
+    "vars": [
+      "code",
+      "dataset_description",
+      "goal"
+    ],
+    "template": "Role: You are a TA reviewing a student's data analysis code for a course assignment.\n\nDataset: {{dataset_description}}\nAnalysis goal: {{goal}}\n\nCode:\n```python\n{{code}}\n```\n\nObjective: Review for logical correctness (not just syntax), flag any statistical misuse, and suggest clearer variable names / structure. Keep suggestions appropriate for a student submission, not an over-engineered production pipeline.\n\nOutput: annotated issues list, then a cleaned-up version of the code.",
+    "uses": 0,
+    "createdAt": 1786351485891
+  }
+]
