@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Defend Your Experience</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FAFAF8;
+    --paper-raised:#FFFFFF;
+    --ink:#17181A;
+    --muted:#6E6C66;
+    --faint:#9C9A92;
+    --hairline:#E4E1D9;
+    --accent:#24493B;
+    --accent-soft:#E7EEE9;
+    --amber:#9A6B23;
+    --amber-soft:#F5EBD9;
+    --red:#A83B32;
+    --red-soft:#F6E6E3;
+    --radius:2px;
+    --serif:'Newsreader', Georgia, serif;
+    --sans:'Inter', -apple-system, sans-serif;
+    --mono:'IBM Plex Mono', monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--sans);
+    line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  ::selection{background:var(--accent-soft);}
+  button{font-family:inherit;}
+  :focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.01ms !important; transition-duration:0.01ms !important;}
+  }
+
+  /* ---------- App shell ---------- */
+  #app{min-height:100vh; display:flex; flex-direction:column;}
+
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px 28px; border-bottom:1px solid var(--hairline);
+    background:var(--paper); position:sticky; top:0; z-index:50;
+  }
+  .brand{display:flex; align-items:baseline; gap:10px;}
+  .brand-mark{
+    font-family:var(--mono); font-size:11px; letter-spacing:0.12em;
+    color:var(--accent); border:1px solid var(--accent); padding:2px 6px;
+    border-radius:var(--radius);
+  }
+  .brand-name{font-family:var(--serif); font-size:19px; font-weight:600; letter-spacing:-0.01em;}
+  .topbar-right{display:flex; align-items:center; gap:18px;}
+  .topbar-stat{font-family:var(--mono); font-size:11px; color:var(--muted); letter-spacing:0.04em;}
+  .btn{
+    font-family:var(--sans); font-size:13px; font-weight:600; cursor:pointer;
+    border-radius:var(--radius); border:1px solid var(--ink); background:var(--ink); color:var(--paper);
+    padding:9px 16px; transition:transform .12s ease, opacity .12s ease;
+  }
+  .btn:hover{opacity:0.85;}
+  .btn:active{transform:scale(0.98);}
+  .btn.secondary{background:transparent; color:var(--ink); border:1px solid var(--hairline);}
+  .btn.secondary:hover{border-color:var(--ink);}
+  .btn.ghost{background:transparent; border:none; color:var(--muted); padding:6px 4px;}
+  .btn.ghost:hover{color:var(--ink);}
+  .btn:disabled{opacity:0.4; cursor:not-allowed;}
+
+  .main{flex:1; display:flex; width:100%; max-width:1320px; margin:0 auto;}
+
+  /* ---------- Landing / empty state ---------- */
+  .landing{
+    flex:1; display:flex; align-items:center; justify-content:center; padding:40px 24px;
+  }
+  .landing-inner{max-width:640px; width:100%; text-align:center;}
+  .eyebrow{
+    font-family:var(--mono); font-size:11px; letter-spacing:0.14em; color:var(--accent);
+    text-transform:uppercase; margin-bottom:18px;
+  }
+  .landing h1{
+    font-family:var(--serif); font-size:44px; line-height:1.12; font-weight:500;
+    margin:0 0 16px; letter-spacing:-0.015em;
+  }
+  .landing h1 em{font-style:italic; color:var(--accent);}
+  .landing p.lead{
+    font-size:16px; color:var(--muted); max-width:480px; margin:0 auto 36px; line-height:1.6;
+  }
+  .dropzone{
+    border:1px dashed var(--faint); border-radius:var(--radius); background:var(--paper-raised);
+    padding:40px 24px; cursor:pointer; transition:border-color .15s ease, background .15s ease;
+    text-align:center;
+  }
+  .dropzone.dragover{border-color:var(--accent); background:var(--accent-soft);}
+  .dropzone .dz-icon{font-size:26px; margin-bottom:10px; opacity:0.6;}
+  .dropzone .dz-title{font-weight:600; font-size:14px; margin-bottom:4px;}
+  .dropzone .dz-sub{font-size:12.5px; color:var(--muted);}
+  input[type=file]{display:none;}
+  .or-divider{
+    display:flex; align-items:center; gap:12px; margin:22px 0; color:var(--faint); font-size:12px;
+    font-family:var(--mono); letter-spacing:0.08em;
+  }
+  .or-divider::before, .or-divider::after{content:''; flex:1; height:1px; background:var(--hairline);}
+  textarea.paste-area{
+    width:100%; min-height:120px; border:1px solid var(--hairline); border-radius:var(--radius);
+    padding:14px; font-family:var(--sans); font-size:13.5px; color:var(--ink); resize:vertical;
+    background:var(--paper-raised);
+  }
+  textarea.paste-area:focus{border-color:var(--accent);}
+  .landing-actions{margin-top:16px; display:flex; justify-content:center; gap:10px;}
+  .file-chip{
+    display:inline-flex; align-items:center; gap:8px; font-family:var(--mono); font-size:12px;
+    background:var(--accent-soft); color:var(--accent); padding:6px 10px; border-radius:var(--radius);
+    margin-top:14px;
+  }
+  .landing-note{font-size:12px; color:var(--faint); margin-top:26px;}
+
+  /* ---------- Style picker (shown only if no memory) ---------- */
+  .style-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:22px;}
+  .style-card{
+    border:1px solid var(--hairline); border-radius:var(--radius); padding:16px; text-align:left;
+    cursor:pointer; background:var(--paper-raised); transition:border-color .15s ease;
+  }
+  .style-card:hover{border-color:var(--ink);}
+  .style-card h4{margin:0 0 4px; font-size:13.5px;}
+  .style-card p{margin:0; font-size:11.5px; color:var(--muted);}
+
+  /* ---------- Interview layout ---------- */
+  .interview{display:none; flex:1; width:100%;}
+  .interview.active{display:flex;}
+
+  .sidebar{
+    width:280px; flex-shrink:0; border-right:1px solid var(--hairline);
+    padding:24px 18px; display:flex; flex-direction:column; gap:20px;
+  }
+  .sidebar-section-title{
+    font-family:var(--mono); font-size:10.5px; letter-spacing:0.1em; color:var(--faint);
+    text-transform:uppercase; margin-bottom:10px;
+  }
+  .confidence-meter{border:1px solid var(--hairline); border-radius:var(--radius); padding:14px; background:var(--paper-raised);}
+  .meter-value{font-family:var(--serif); font-size:32px; font-weight:600; line-height:1;}
+  .meter-label{font-size:11.5px; color:var(--muted); margin-top:4px;}
+  .meter-bar{height:5px; background:var(--hairline); border-radius:3px; margin-top:12px; overflow:hidden;}
+  .meter-bar-fill{height:100%; background:var(--accent); transition:width .4s ease;}
+
+  .exhibit-list{display:flex; flex-direction:column; gap:6px; overflow-y:auto;}
+  .exhibit-item{
+    display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:var(--radius);
+    cursor:default; border:1px solid transparent; font-size:12.5px;
+  }
+  .exhibit-item.current{background:var(--accent-soft); border-color:var(--accent);}
+  .exhibit-dot{width:7px; height:7px; border-radius:50%; flex-shrink:0; background:var(--hairline);}
+  .exhibit-dot.pending{background:var(--faint);}
+  .exhibit-dot.progress{background:var(--amber);}
+  .exhibit-dot.defended{background:var(--accent);}
+  .exhibit-dot.weak{background:var(--red);}
+  .exhibit-label{font-family:var(--mono); font-size:10.5px; color:var(--faint); flex-shrink:0;}
+  .exhibit-text{
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:var(--ink);
+  }
+
+  .sidebar-footer{margin-top:auto; display:flex; flex-direction:column; gap:8px;}
+
+  .chat-col{flex:1; display:flex; flex-direction:column; min-width:0;}
+  .exhibit-banner{
+    border-bottom:1px solid var(--hairline); padding:18px 32px; background:var(--paper-raised);
+  }
+  .exhibit-banner-top{display:flex; align-items:center; gap:10px; margin-bottom:8px;}
+  .exhibit-tag{
+    font-family:var(--mono); font-size:11px; letter-spacing:0.06em; color:var(--accent);
+    border:1px solid var(--accent); padding:2px 7px; border-radius:var(--radius);
+  }
+  .exhibit-category{font-size:11.5px; color:var(--muted); font-family:var(--mono);}
+  .exhibit-quote{
+    font-family:var(--serif); font-style:italic; font-size:17px; color:var(--ink); line-height:1.4;
+  }
+  .stamp{
+    display:inline-block; font-family:var(--mono); font-weight:600; font-size:11px; letter-spacing:0.08em;
+    padding:3px 9px; border:2px solid; border-radius:3px; transform:rotate(-3deg); margin-left:10px;
+    text-transform:uppercase;
+  }
+  .stamp.defended{color:var(--accent); border-color:var(--accent);}
+  .stamp.weak{color:var(--red); border-color:var(--red);}
+  .stamp.progress{color:var(--amber); border-color:var(--amber);}
+
+  .transcript{flex:1; overflow-y:auto; padding:24px 32px; display:flex; flex-direction:column; gap:16px;}
+  .msg{max-width:640px; font-size:14.5px; line-height:1.6;}
+  .msg.interviewer{align-self:flex-start;}
+  .msg.user{align-self:flex-end;}
+  .msg-role{
+    font-family:var(--mono); font-size:10px; letter-spacing:0.08em; color:var(--faint);
+    text-transform:uppercase; margin-bottom:4px;
+  }
+  .msg.user .msg-role{text-align:right;}
+  .msg-bubble{padding:12px 15px; border-radius:var(--radius);}
+  .msg.interviewer .msg-bubble{background:var(--paper-raised); border:1px solid var(--hairline);}
+  .msg.user .msg-bubble{background:var(--ink); color:var(--paper);}
+  .msg-feedback{
+    font-size:12px; color:var(--muted); margin-top:6px; padding:8px 10px; border-left:2px solid var(--hairline);
+    background:transparent;
+  }
+  .msg-feedback.positive{border-left-color:var(--accent);}
+  .msg-feedback.negative{border-left-color:var(--red);}
+
+  .typing{align-self:flex-start; display:flex; gap:4px; padding:12px 15px;}
+  .typing span{width:5px; height:5px; border-radius:50%; background:var(--faint); animation:blink 1.2s infinite ease-in-out;}
+  .typing span:nth-child(2){animation-delay:0.15s;}
+  .typing span:nth-child(3){animation-delay:0.3s;}
+  @keyframes blink{0%,80%,100%{opacity:0.25;} 40%{opacity:1;}}
+
+  .composer{border-top:1px solid var(--hairline); padding:18px 32px; background:var(--paper);}
+  .composer-row{display:flex; gap:10px; align-items:flex-end;}
+  .composer textarea{
+    flex:1; border:1px solid var(--hairline); border-radius:var(--radius); padding:12px 14px;
+    font-family:var(--sans); font-size:14px; resize:none; max-height:160px; background:var(--paper-raised);
+  }
+  .composer textarea:focus{border-color:var(--accent);}
+  .composer-hint{font-size:11px; color:var(--faint); margin-top:6px;}
+
+  .error-banner{
+    margin:0 32px 12px; padding:10px 14px; background:var(--red-soft); color:var(--red);
+    border-radius:var(--radius); font-size:13px; display:flex; align-items:center; justify-content:space-between;
+  }
+  .error-banner button{background:none; border:1px solid var(--red); color:var(--red); border-radius:var(--radius); padding:4px 10px; font-size:12px; cursor:pointer;}
+
+  /* ---------- Report ---------- */
+  .report{display:none; flex:1; padding:40px 40px 80px; max-width:960px; margin:0 auto; width:100%;}
+  .report.active{display:block;}
+  .report-header{margin-bottom:36px;}
+  .report-header .eyebrow{margin-bottom:10px;}
+  .report-header h1{font-family:var(--serif); font-size:36px; font-weight:500; margin:0 0 8px;}
+  .report-header p{color:var(--muted); font-size:14.5px; max-width:560px;}
+  .report-score-row{display:flex; gap:24px; margin:28px 0 40px;}
+  .score-card{
+    flex:1; border:1px solid var(--hairline); border-radius:var(--radius); padding:20px; background:var(--paper-raised);
+  }
+  .score-card .num{font-family:var(--serif); font-size:38px; font-weight:600;}
+  .score-card .lbl{font-size:11.5px; color:var(--muted); margin-top:4px; font-family:var(--mono); letter-spacing:0.04em;}
+
+  .report-section{margin-bottom:36px;}
+  .report-section h2{
+    font-family:var(--serif); font-size:19px; font-weight:600; margin:0 0 16px;
+    padding-bottom:10px; border-bottom:1px solid var(--hairline);
+  }
+  .claim-row{
+    display:flex; gap:16px; padding:16px 0; border-bottom:1px solid var(--hairline); align-items:flex-start;
+  }
+  .claim-row:last-child{border-bottom:none;}
+  .claim-bar-wrap{width:110px; flex-shrink:0; padding-top:3px;}
+  .claim-bar{height:6px; background:var(--hairline); border-radius:3px; overflow:hidden;}
+  .claim-bar-fill{height:100%;}
+  .claim-bar-fill.defended{background:var(--accent);}
+  .claim-bar-fill.weak{background:var(--red);}
+  .claim-bar-fill.progress{background:var(--amber);}
+  .claim-score-num{font-family:var(--mono); font-size:11px; color:var(--muted); margin-top:5px;}
+  .claim-body h4{margin:0 0 4px; font-size:14px;}
+  .claim-body p{margin:0; font-size:13px; color:var(--muted); line-height:1.55;}
+  .claim-body .recommendation{
+    margin-top:8px; font-size:12.5px; padding:8px 10px; background:var(--amber-soft); color:#5c4218;
+    border-radius:var(--radius);
+  }
+  .report-actions{display:flex; gap:10px; margin-top:36px;}
+
+  /* ---------- Misc ---------- */
+  .loader-inline{display:inline-flex; gap:3px; align-items:center;}
+  .loader-inline span{width:4px; height:4px; border-radius:50%; background:currentColor; animation:blink 1.2s infinite ease-in-out;}
+  .loader-inline span:nth-child(2){animation-delay:0.15s;}
+  .loader-inline span:nth-child(3){animation-delay:0.3s;}
+
+  @media (max-width: 860px){
+    .sidebar{display:none;}
+    .exhibit-banner, .transcript, .composer{padding-left:18px; padding-right:18px;}
+    .landing h1{font-size:32px;}
+    .report{padding:28px 20px 60px;}
+    .report-score-row{flex-direction:column;}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div class="topbar">
+    <div class="brand">
+      <span class="brand-mark">DYE</span>
+      <span class="brand-name">Defend Your Experience</span>
+    </div>
+    <div class="topbar-right" id="topbarRight" style="display:none;">
+      <span class="topbar-stat" id="topStat">0 of 0 claims reviewed</span>
+      <button class="btn secondary" id="viewReportBtn">View report</button>
+      <button class="btn ghost" id="resetBtn">Start over</button>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- LANDING -->
+    <div class="landing" id="landingView">
+      <div class="landing-inner">
+        <div class="eyebrow">Behavioral interview prep · Entry level</div>
+        <h1>Every claim on your resume<br>deserves an <em>answer</em>, not just a line.</h1>
+        <p class="lead">Upload your resume. This isn't a resume reviewer — it's a skeptical hiring manager who reads every bullet point and asks "prove it." Answer honestly, get pushed on the vague parts, and leave with a Defense Report.</p>
+
+        <div id="uploadStage">
+          <div class="dropzone" id="dropzone" tabindex="0" role="button" aria-label="Upload resume">
+            <div class="dz-icon">&#128196;</div>
+            <div class="dz-title">Drop your resume here</div>
+            <div class="dz-sub">.txt or .pdf, or click to browse</div>
+            <input type="file" id="fileInput" accept=".txt,.md,.pdf">
+          </div>
+          <div class="or-divider">or paste it</div>
+          <textarea class="paste-area" id="pasteArea" placeholder="Paste your resume, LinkedIn summary, or project description here..."></textarea>
+          <div id="fileChipHolder"></div>
+          <div class="landing-actions">
+            <button class="btn" id="beginBtn" disabled>Begin interview</button>
+          </div>
+        </div>
+
+        <div id="styleStage" style="display:none;">
+          <div class="style-grid" id="styleGrid"></div>
+        </div>
+
+        <p class="landing-note">Nothing leaves your browser except what's sent to Claude to generate your interview. Session saves locally so you can resume later.</p>
+      </div>
+    </div>
+
+    <!-- INTERVIEW -->
+    <div class="interview" id="interviewView">
+      <div class="sidebar">
+        <div>
+          <div class="sidebar-section-title">Overall confidence</div>
+          <div class="confidence-meter">
+            <div class="meter-value" id="overallScore">—</div>
+            <div class="meter-label">how defensible your story is right now</div>
+            <div class="meter-bar"><div class="meter-bar-fill" id="overallBar" style="width:0%"></div></div>
+          </div>
+        </div>
+        <div style="flex:1; display:flex; flex-direction:column; min-height:0;">
+          <div class="sidebar-section-title">Exhibits (claims)</div>
+          <div class="exhibit-list" id="exhibitList"></div>
+        </div>
+        <div class="sidebar-footer">
+          <button class="btn secondary" id="skipBtn">Skip this claim</button>
+        </div>
+      </div>
+
+      <div class="chat-col">
+        <div class="exhibit-banner" id="exhibitBanner"></div>
+        <div id="errorHolder"></div>
+        <div class="transcript" id="transcript"></div>
+        <div class="composer">
+          <div class="composer-row">
+            <textarea id="answerInput" rows="2" placeholder="Type your answer..."></textarea>
+            <button class="btn" id="sendBtn">Answer</button>
+          </div>
+          <div class="composer-hint">Enter to send · Shift+Enter for a new line</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REPORT -->
+    <div class="report" id="reportView"></div>
+
+  </div>
+</div>
+
+<script>
+(function(){
+
+/* ============================= STATE ============================= */
+const STORAGE_KEY = 'dye_session_v1';
+const STYLE_KEY = 'dye_style_pref';
+
+let state = {
+  resumeText: '',
+  style: null,
+  claims: [],          // {id, label, category, quote, status, score, turns:[{q,a,feedback,delta}], done}
+  currentIndex: 0,
+  overallScore: 0,
+  view: 'landing'       // landing | interview | report
+};
+
+const STYLES = [
+  {id:'minimal', name:'Minimal & clean', desc:'Whitespace, subtle accents, quiet.'},
+  {id:'bold', name:'Bold & modern', desc:'Dark mode, strong type, vibrant accent.'},
+  {id:'corporate', name:'Professional & corporate', desc:'Structured, calm, trustworthy.'},
+  {id:'editorial', name:'Warm & editorial', desc:'Serif-led, magazine feel.'}
+];
+
+/* ============================= UTIL ============================= */
+function $(sel){ return document.querySelector(sel); }
+function el(tag, cls, html){ const e=document.createElement(tag); if(cls) e.className=cls; if(html!==undefined) e.innerHTML=html; return e; }
+function save(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){} }
+function load(){ try{ const raw=localStorage.getItem(STORAGE_KEY); if(raw) return JSON.parse(raw); }catch(e){} return null; }
+function clearSession(){ localStorage.removeItem(STORAGE_KEY); }
+
+function statusOf(claim){
+  if(!claim.turns || claim.turns.length===0) return 'pending';
+  if(claim.status) return claim.status;
+  return 'progress';
+}
+
+/* =============================================================
+   LOCAL INTERVIEW ENGINE
+   -----------------------------------------------------------------
+   NOTE: A self-contained local HTML file opened via file:// has no
+   backend and cannot safely call the Anthropic API without asking
+   the person for a secret API key (browser JS cannot hold credentials
+   without exposing them, and this app must not prompt for one). So
+   instead of calling Claude over the network, everything below is a
+   deterministic, offline "skeptical interviewer" engine that reads
+   the resume text directly in the browser: it extracts claims with
+   pattern/keyword heuristics and generates follow-up questions and
+   scoring from templates keyed off each claim's own wording. No
+   network calls, no key, fully local.
+   ============================================================= */
+
+const CATEGORY_RULES = [
+  {cat:'Leadership', words:['led','managed','mentored','supervised','directed','coordinated','oversaw']},
+  {cat:'Impact', words:['increased','reduced','improved','grew','saved','generated','boosted','decreased','cut']},
+  {cat:'Technical', words:['built','developed','engineered','designed','implemented','programmed','architected','coded','deployed']},
+  {cat:'Teamwork', words:['collaborated','partnered','worked with','cross-functional','team']},
+  {cat:'Metric', words:['%','percent','$','users','revenue','hours','x ','times faster']},
+];
+const VAGUE_WORDS = ['various','several','many','multiple','numerous','helped','assisted','responsible for','worked on','involved in'];
+
+function classifyClaim(line){
+  const lower = line.toLowerCase();
+  let cat = 'Experience';
+  for(const rule of CATEGORY_RULES){
+    if(rule.words.some(w=>lower.includes(w))){ cat = rule.cat; break; }
+  }
+  const hasNumber = /\d/.test(line);
+  const vagueHits = VAGUE_WORDS.filter(w=>lower.includes(w)).length;
+  let risk = 'medium';
+  if(!hasNumber && vagueHits>0) risk='high';
+  else if(hasNumber && vagueHits===0) risk='low';
+  return {cat, risk};
+}
+
+function splitIntoCandidateLines(resumeText){
+  const rawLines = resumeText
+    .split(/\n|(?<=[.!?])\s{2,}/)
+    .map(l=>l.replace(/^[\s•\-–*·▪]+/, '').trim())
+    .filter(Boolean);
+  // Merge very short fragments with neighbors is unnecessary; just filter noise.
+  const candidates = rawLines.filter(l=>{
+    if(l.length<25) return false;
+    if(l.length>260) return false;
+    if(/^(email|phone|address|linkedin|github|www\.|http)/i.test(l)) return false;
+    if(/^[A-Z\s]{4,40}$/.test(l) && l.split(' ').length<5) return false; // likely a section header
+    return true;
+  });
+  return candidates;
+}
+
+function scoreCandidate(line){
+  const lower = line.toLowerCase();
+  let score = 0;
+  if(/\d/.test(line)) score += 3;
+  if(/^(led|built|designed|developed|managed|created|launched|drove|architected|owned|shipped|reduced|increased|improved|grew|negotiated|coordinated)/i.test(line)) score += 2;
+  VAGUE_WORDS.forEach(w=>{ if(lower.includes(w)) score += 1; }); // vague lines are HIGH priority to challenge
+  if(line.split(' ').length > 8) score += 1;
+  return score;
+}
+
+async function extractClaims(resumeText){
+  await fakeThinkDelay(600);
+  let candidates = splitIntoCandidateLines(resumeText);
+  if(candidates.length===0){
+    // fallback: just chunk the raw text into sentences
+    candidates = resumeText.split(/(?<=[.!?])\s+/).map(s=>s.trim()).filter(s=>s.length>25);
+  }
+  if(candidates.length===0){
+    const e = new Error('EMPTY'); throw e;
+  }
+  const ranked = candidates
+    .map(line=>({line, score:scoreCandidate(line)}))
+    .sort((a,b)=>b.score-a.score)
+    .slice(0, 8)
+    .map(x=>x.line);
+
+  // preserve original resume order for a more natural interview flow
+  ranked.sort((a,b)=>candidates.indexOf(a)-candidates.indexOf(b));
+
+  return ranked.map((line,i)=>{
+    const {cat, risk} = classifyClaim(line);
+    return {
+      id:'C'+(i+1),
+      label:'Exhibit '+String.fromCharCode(65+i),
+      category:cat,
+      quote:line,
+      claimText:line.length>140 ? line.slice(0,140).trim()+'…' : line,
+      riskLevel:risk,
+      status:'pending',
+      score:0,
+      turns:[],
+      done:false
+    };
+  });
+}
+
+function fakeThinkDelay(ms){
+  return new Promise(r=>setTimeout(r, ms));
+}
+
+/* ---- question templates, keyed by exchange number and claim risk ---- */
+const OPENERS = [
+  (c)=>`You wrote: "${c.quote}". Walk me through it — what exactly did you personally do, step by step?`,
+  (c)=>`Let's start with "${c.quote}". What was the actual situation before you got involved?`,
+  (c)=>`Tell me about "${c.quote}" — specifically, what was YOUR role versus the rest of the team?`,
+  (c)=>`On "${c.quote}" — what problem were you actually trying to solve, and why did it matter?`,
+];
+const FOLLOWUPS_NUMBER_MISSING = [
+  (c,a)=>`You said "${truncate(a)}" — can you put a number on that? How much, how many, or over what timeframe?`,
+  (c,a)=>`How would you actually measure whether that worked? What changed, concretely?`,
+];
+const FOLLOWUPS_VAGUE = [
+  (c,a)=>`That's still pretty general. Give me one specific moment or decision from that — what did you say or do, exactly?`,
+  (c,a)=>`Who else was involved, and what would they say your specific contribution was?`,
+];
+const FOLLOWUPS_STRONG = [
+  (c,a)=>`Good detail. What was the hardest part of that, or the moment it almost didn't work?`,
+  (c,a)=>`If you did it again today, what would you change?`,
+  (c,a)=>`What did you learn from that that you've applied since?`,
+];
+const FOLLOWUPS_GENERIC = [
+  (c,a)=>`What obstacle came up while you were doing this, and how did you handle it?`,
+  (c,a)=>`What would you say was the single biggest outcome of this, and how do you know?`,
+];
+
+function truncate(s, n){ n=n||60; return s.length>n ? s.slice(0,n).trim()+'…' : s; }
+
+function analyzeAnswer(answer){
+  const lower = answer.toLowerCase();
+  const wordCount = answer.trim().split(/\s+/).filter(Boolean).length;
+  const hasNumber = /\d/.test(answer);
+  const vagueHits = VAGUE_WORDS.filter(w=>lower.includes(w)).length;
+  const hasFirstPerson = /\b(i|my|me)\b/i.test(answer);
+  let specificity = 0;
+  if(wordCount>=25) specificity += 2;
+  else if(wordCount>=10) specificity += 1;
+  else specificity -= 1;
+  if(hasNumber) specificity += 2;
+  if(hasFirstPerson) specificity += 1;
+  specificity -= vagueHits;
+  if(wordCount<4) specificity -= 3; // near-empty / evasive answer
+  return {wordCount, hasNumber, vagueHits, hasFirstPerson, specificity};
+}
+
+/* isFirst=true => opening question for this claim, no prior answer to react to */
+async function getInterviewerTurn(claim, isFirst){
+  await fakeThinkDelay(500 + Math.random()*400);
+  const opener = OPENERS[claim.id.charCodeAt(1) % OPENERS.length] || OPENERS[0];
+  return {
+    question: opener(claim),
+    feedback: '',
+    feedbackTone: 'neutral',
+    scoreDelta: 0,
+    shouldConclude: false,
+    finalStatus: null,
+    recommendation: ''
+  };
+}
+
+/* Called after each answer: decide feedback, score delta, and whether to continue or conclude */
+async function getEvalAndNext(claim){
+  await fakeThinkDelay(550 + Math.random()*450);
+  const lastTurn = claim.turns[claim.turns.length-1];
+  const answer = lastTurn.a;
+  const analysis = analyzeAnswer(answer);
+  const exchangeCount = claim.turns.length;
+
+  let scoreDelta, feedback, feedbackTone;
+  if(analysis.specificity>=4){
+    scoreDelta = 14; feedback = "That's concrete — specific detail like that holds up under scrutiny."; feedbackTone='positive';
+  } else if(analysis.specificity>=2){
+    scoreDelta = 6; feedback = "Reasonable, but a real interviewer would want more specifics here."; feedbackTone='neutral';
+  } else if(analysis.specificity>=0){
+    scoreDelta = -4; feedback = "That's still fairly general — this needs a concrete example to be convincing."; feedbackTone='negative';
+  } else {
+    scoreDelta = -14; feedback = "That answer is too thin to defend this claim in a real interview."; feedbackTone='negative';
+  }
+
+  const shouldConclude = exchangeCount>=3 || (exchangeCount>=2 && (analysis.specificity>=4 || analysis.specificity<0));
+
+  if(shouldConclude){
+    const finalScore = Math.max(0, Math.min(100, claim.score + scoreDelta + (exchangeCount===1?50:0)));
+    const finalStatus = finalScore>=60 ? 'defended' : 'weak';
+    const recommendation = finalStatus==='defended'
+      ? `Keep leading with the concrete details you gave here when you tell this story out loud.`
+      : `Rebuild this story with a specific situation, the exact action you took, and a measurable result — right now it's too general to survive follow-up questions.`;
+    return {
+      question:'', feedback, feedbackTone, scoreDelta, shouldConclude:true, finalStatus, recommendation
+    };
+  }
+
+  let pool;
+  if(!analysis.hasNumber && exchangeCount===1) pool = FOLLOWUPS_NUMBER_MISSING;
+  else if(analysis.vagueHits>0 || analysis.specificity<2) pool = FOLLOWUPS_VAGUE;
+  else if(analysis.specificity>=4) pool = FOLLOWUPS_STRONG;
+  else pool = FOLLOWUPS_GENERIC;
+
+  const template = pool[exchangeCount % pool.length];
+  return {
+    question: template(claim, answer),
+    feedback, feedbackTone, scoreDelta,
+    shouldConclude:false, finalStatus:null, recommendation:''
+  };
+}
+
+/* ============================= RENDER: LANDING ============================= */
+let uploadedFileName = null;
+
+function renderStylePicker(){
+  const grid = $('#styleGrid');
+  grid.innerHTML='';
+  STYLES.forEach(s=>{
+    const card = el('div','style-card');
+    card.innerHTML = `<h4>${s.name}</h4><p>${s.desc}</p>`;
+    card.addEventListener('click', ()=>{
+      state.style = s.id;
+      try{ localStorage.setItem(STYLE_KEY, s.id); }catch(e){}
+      startExtraction();
+    });
+    grid.appendChild(card);
+  });
+}
+
+function initLanding(){
+  const dz = $('#dropzone');
+  const fileInput = $('#fileInput');
+  const pasteArea = $('#pasteArea');
+  const beginBtn = $('#beginBtn');
+
+  dz.addEventListener('click', ()=>fileInput.click());
+  dz.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' ') fileInput.click(); });
+  ['dragenter','dragover'].forEach(evt=>dz.addEventListener(evt, e=>{ e.preventDefault(); dz.classList.add('dragover'); }));
+  ['dragleave','drop'].forEach(evt=>dz.addEventListener(evt, e=>{ e.preventDefault(); dz.classList.remove('dragover'); }));
+  dz.addEventListener('drop', e=>{
+    const f = e.dataTransfer.files[0];
+    if(f) handleFile(f);
+  });
+  fileInput.addEventListener('change', e=>{
+    const f = e.target.files[0];
+    if(f) handleFile(f);
+  });
+
+  function handleFile(f){
+    uploadedFileName = f.name;
+    const chipHolder = $('#fileChipHolder');
+    chipHolder.innerHTML = `<div class="file-chip">&#128206; ${f.name}</div>`;
+    if(f.type==='application/pdf' || f.name.toLowerCase().endsWith('.pdf')){
+      // Best-effort: PDFs are binary; ask user to paste text fallback if extraction fails.
+      const reader = new FileReader();
+      reader.onload = function(){
+        pasteArea.value = "(PDF uploaded: " + f.name + ") — for best results, please paste the text content of your resume below, since this app reads text directly.";
+        beginBtn.disabled = false;
+      };
+      reader.readAsArrayBuffer(f);
+    } else {
+      const reader = new FileReader();
+      reader.onload = function(e){
+        pasteArea.value = e.target.result;
+        checkBegin();
+      };
+      reader.readAsText(f);
+    }
+  }
+
+  pasteArea.addEventListener('input', checkBegin);
+  function checkBegin(){
+    beginBtn.disabled = pasteArea.value.trim().length < 40;
+  }
+
+  beginBtn.addEventListener('click', ()=>{
+    state.resumeText = pasteArea.value.trim();
+    const savedStyle = null; // memory not available in this session by default
+    if(savedStyle){
+      state.style = savedStyle;
+      startExtraction();
+    } else {
+      $('#uploadStage').style.display='none';
+      $('#styleStage').style.display='block';
+      renderStylePicker();
+    }
+  });
+}
+
+/* ============================= EXTRACTION FLOW ============================= */
+async function startExtraction(){
+  const inner = $('.landing-inner');
+  inner.innerHTML = `
+    <div class="eyebrow">Reading your experience</div>
+    <h1>Pulling out every claim<br>that needs an <em>answer</em>...</h1>
+    <p class="lead">This takes a few seconds. The interviewer is identifying which lines on your resume are strongest — and which are vaguest.</p>
+    <div class="loader-inline" style="justify-content:center; color:var(--accent); font-size:20px;"><span></span><span></span><span></span></div>
+  `;
+  try{
+    const claims = await extractClaims(state.resumeText);
+    if(!claims || claims.length===0) throw new Error('EMPTY');
+    state.claims = claims;
+    state.currentIndex = 0;
+    save();
+    enterInterview();
+  }catch(err){
+    inner.innerHTML = `
+      <div class="eyebrow">Something went wrong</div>
+      <h1>Couldn't read that resume.</h1>
+      <p class="lead">${err && err.message==='EMPTY' ? 'No usable claims could be found in that text. Try pasting more detail (full bullet points work best).' : 'The extraction step failed. This can happen with very short or unusual text.'}</p>
+      <button class="btn" id="retryExtract">Try again</button>
+    `;
+    $('#retryExtract').addEventListener('click', ()=>{ startExtraction(); });
+  }
+}
+
+/* ============================= INTERVIEW VIEW ============================= */
+function enterInterview(){
+  state.view='interview';
+  $('#landingView').style.display='none';
+  $('#interviewView').classList.add('active');
+  $('#topbarRight').style.display='flex';
+  renderSidebar();
+  loadClaimTurn(true);
+}
+
+function computeOverall(){
+  const scored = state.claims.filter(c=>c.status==='defended'||c.status==='weak');
+  if(scored.length===0) return 0;
+  const sum = scored.reduce((a,c)=>a+Math.max(0,c.score),0);
+  return Math.round(sum/scored.length);
+}
+
+function renderSidebar(){
+  const overall = computeOverall();
+  $('#overallScore').textContent = overall + '%';
+  $('#overallBar').style.width = overall+'%';
+  const reviewed = state.claims.filter(c=>c.status==='defended'||c.status==='weak').length;
+  $('#topStat').textContent = `${reviewed} of ${state.claims.length} claims reviewed`;
+
+  const list = $('#exhibitList');
+  list.innerHTML='';
+  state.claims.forEach((c,i)=>{
+    const item = el('div','exhibit-item'+(i===state.currentIndex?' current':''));
+    const st = statusOf(c);
+    item.innerHTML = `<span class="exhibit-dot ${st}"></span><span class="exhibit-label">${c.label}</span><span class="exhibit-text">${c.claimText}</span>`;
+    list.appendChild(item);
+  });
+}
+
+function renderExhibitBanner(claim){
+  const st = statusOf(claim);
+  let stampHtml = '';
+  if(st==='defended') stampHtml = '<span class="stamp defended">Defended</span>';
+  else if(st==='weak') stampHtml = '<span class="stamp weak">Needs work</span>';
+  else if(st==='progress') stampHtml = '<span class="stamp progress">In progress</span>';
+  $('#exhibitBanner').innerHTML = `
+    <div class="exhibit-banner-top">
+      <span class="exhibit-tag">${claim.label}</span>
+      <span class="exhibit-category">${claim.category}</span>
+      ${stampHtml}
+    </div>
+    <div class="exhibit-quote">"${claim.quote}"</div>
+  `;
+}
+
+function appendMessage(role, text, feedback, tone){
+  const t = $('#transcript');
+  const msg = el('div','msg '+(role==='interviewer'?'interviewer':'user'));
+  const roleLabel = role==='interviewer' ? 'Interviewer' : 'You';
+  msg.innerHTML = `<div class="msg-role">${roleLabel}</div><div class="msg-bubble"></div>`;
+  msg.querySelector('.msg-bubble').textContent = text;
+  if(feedback){
+    const fb = el('div','msg-feedback'+(tone?' '+tone:''));
+    fb.textContent = feedback;
+    msg.appendChild(fb);
+  }
+  t.appendChild(msg);
+  t.scrollTop = t.scrollHeight;
+  return msg;
+}
+
+function showTyping(){
+  const t = $('#transcript');
+  const ty = el('div','typing'); ty.id='typingIndicator';
+  ty.innerHTML='<span></span><span></span><span></span>';
+  t.appendChild(ty);
+  t.scrollTop = t.scrollHeight;
+}
+function hideTyping(){ const ty=$('#typingIndicator'); if(ty) ty.remove(); }
+
+function showError(msg, retryFn){
+  const holder = $('#errorHolder');
+  holder.innerHTML='';
+  const banner = el('div','error-banner');
+  const span = el('span'); span.textContent = msg;
+  const btn = el('button'); btn.textContent='Retry';
+  btn.addEventListener('click', ()=>{ holder.innerHTML=''; retryFn(); });
+  banner.appendChild(span); banner.appendChild(btn);
+  holder.appendChild(banner);
+}
+
+async function loadClaimTurn(isFirst){
+  const claim = state.claims[state.currentIndex];
+  if(!claim){ enterReport(); return; }
+  renderExhibitBanner(claim);
+  renderSidebar();
+  $('#answerInput').disabled = true;
+  $('#sendBtn').disabled = true;
+  showTyping();
+  try{
+    const turn = await getInterviewerTurn(claim, isFirst);
+    hideTyping();
+    appendMessage('interviewer', turn.question);
+    claim._pendingQuestion = turn.question;
+    $('#answerInput').disabled = false;
+    $('#sendBtn').disabled = false;
+    $('#answerInput').focus();
+  }catch(err){
+    hideTyping();
+    showError("Couldn't load the next question. Please try again.", ()=>loadClaimTurn(isFirst));
+  }
+}
+
+async function submitAnswer(){
+  const input = $('#answerInput');
+  const answer = input.value.trim();
+  if(!answer) return;
+  const claim = state.claims[state.currentIndex];
+  appendMessage('user', answer);
+  input.value='';
+  input.disabled = true;
+  $('#sendBtn').disabled = true;
+  showTyping();
+
+  try{
+    // record the turn placeholder, then get evaluation which may include next question
+    claim.turns.push({q: claim._pendingQuestion, a: answer, feedback:'', delta:0});
+
+    const evalTurn = await getEvalAndNext(claim);
+    hideTyping();
+
+    claim.turns[claim.turns.length-1].feedback = evalTurn.feedback;
+    claim.turns[claim.turns.length-1].delta = evalTurn.scoreDelta;
+    claim.score = Math.max(0, Math.min(100, claim.score + evalTurn.scoreDelta + (claim.turns.length===1?50:0)));
+
+    if(evalTurn.feedback){
+      const lastMsg = $('#transcript').lastElementChild;
+      const fb = el('div','msg-feedback '+(evalTurn.feedbackTone||'neutral'));
+      fb.textContent = evalTurn.feedback;
+      lastMsg.appendChild(fb);
+    }
+
+    if(evalTurn.shouldConclude){
+      claim.status = evalTurn.finalStatus || (claim.score>=60?'defended':'weak');
+      claim.recommendation = evalTurn.recommendation || '';
+      claim.done = true;
+      save();
+      renderSidebar();
+      // brief pause then move to next claim
+      setTimeout(()=>{
+        state.currentIndex += 1;
+        save();
+        if(state.currentIndex < state.claims.length){
+          loadClaimTurn(true);
+        }else{
+          enterReport();
+        }
+      }, 900);
+    } else {
+      claim._pendingQuestion = evalTurn.question;
+      appendMessage('interviewer', evalTurn.question);
+      save();
+      renderSidebar();
+      input.disabled = false;
+      $('#sendBtn').disabled = false;
+      input.focus();
+    }
+  }catch(err){
+    hideTyping();
+    showError("Something went wrong evaluating your answer. Please try again.", ()=>{
+      claim.turns.pop();
+      input.disabled=false; $('#sendBtn').disabled=false;
+    });
+  }
+}
+
+/* ============================= REPORT ============================= */
+function enterReport(){
+  state.view='report';
+  $('#interviewView').classList.remove('active');
+  $('#reportView').classList.add('active');
+  renderReport();
+  save();
+}
+
+function renderReport(){
+  const overall = computeOverall();
+  const defended = state.claims.filter(c=>c.status==='defended');
+  const weak = state.claims.filter(c=>c.status==='weak');
+  const pending = state.claims.filter(c=>c.status!=='defended' && c.status!=='weak');
+
+  let readinessLabel = 'Needs preparation';
+  if(overall>=75) readinessLabel = 'Interview ready';
+  else if(overall>=50) readinessLabel = 'Getting there';
+
+  const report = $('#reportView');
+  report.innerHTML = `
+    <div class="report-header">
+      <div class="eyebrow">Defense report</div>
+      <h1>${readinessLabel}.</h1>
+      <p>Overall, you defended ${defended.length} of ${state.claims.length} claims with specifics a hiring manager would believe. Here's exactly where to tighten your story before the real interview.</p>
+    </div>
+    <div class="report-score-row">
+      <div class="score-card"><div class="num">${overall}%</div><div class="lbl">Overall confidence</div></div>
+      <div class="score-card"><div class="num">${defended.length}</div><div class="lbl">Well defended</div></div>
+      <div class="score-card"><div class="num">${weak.length}</div><div class="lbl">Need strengthening</div></div>
+    </div>
+
+    <div class="report-section">
+      <h2>Every claim, scored</h2>
+      <div id="claimRows"></div>
+    </div>
+
+    <div class="report-actions">
+      <button class="btn" id="exportBtn">Export report</button>
+      <button class="btn secondary" id="reviewAgainBtn">Re-run weak claims</button>
+      <button class="btn ghost" id="startOverBtn2">Start a new session</button>
+    </div>
+  `;
+
+  const rows = $('#claimRows');
+  state.claims.forEach(c=>{
+    const st = c.status || 'pending';
+    const barClass = st==='defended'?'defended':(st==='weak'?'weak':'progress');
+    const row = el('div','claim-row');
+    row.innerHTML = `
+      <div class="claim-bar-wrap">
+        <div class="claim-bar"><div class="claim-bar-fill ${barClass}" style="width:${c.score||0}%"></div></div>
+        <div class="claim-score-num">${c.score||0}% · ${c.label}</div>
+      </div>
+      <div class="claim-body">
+        <h4>${c.claimText}</h4>
+        <p>"${c.quote}"</p>
+        ${c.recommendation ? `<div class="recommendation">${c.recommendation}</div>` : (st==='pending' ? '<div class="recommendation">Not yet reviewed in this session.</div>' : '')}
+      </div>
+    `;
+    rows.appendChild(row);
+  });
+
+  $('#exportBtn').addEventListener('click', exportReport);
+  $('#reviewAgainBtn').addEventListener('click', reviewWeakOnes);
+  $('#startOverBtn2').addEventListener('click', resetAll);
+}
+
+function exportReport(){
+  const overall = computeOverall();
+  let text = `DEFEND YOUR EXPERIENCE — DEFENSE REPORT\n`;
+  text += `Generated: ${new Date().toLocaleString()}\n`;
+  text += `Overall confidence: ${overall}%\n\n`;
+  state.claims.forEach(c=>{
+    text += `${c.label} [${c.category}] — ${c.status||'not reviewed'} (${c.score||0}%)\n`;
+    text += `Claim: ${c.claimText}\n`;
+    text += `Original text: "${c.quote}"\n`;
+    if(c.recommendation) text += `Recommendation: ${c.recommendation}\n`;
+    c.turns.forEach((t,i)=>{
+      text += `  Q${i+1}: ${t.q}\n  A${i+1}: ${t.a}\n  Feedback: ${t.feedback}\n`;
+    });
+    text += `\n`;
+  });
+  const blob = new Blob([text], {type:'text/plain'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'defense-report.txt';
+  a.click();
+}
+
+function reviewWeakOnes(){
+  const weakIdx = state.claims.findIndex(c=>c.status==='weak');
+  if(weakIdx===-1) return;
+  const c = state.claims[weakIdx];
+  c.status='pending'; c.turns=[]; c.score=0; c.done=false;
+  state.currentIndex = weakIdx;
+  $('#reportView').classList.remove('active');
+  $('#interviewView').classList.add('active');
+  $('#transcript').innerHTML='';
+  loadClaimTurn(true);
+}
+
+function resetAll(){
+  clearSession();
+  location.reload();
+}
+
+/* ============================= WIRE UP ============================= */
+$('#sendBtn').addEventListener('click', submitAnswer);
+$('#answerInput').addEventListener('keydown', e=>{
+  if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); submitAnswer(); }
+});
+$('#viewReportBtn').addEventListener('click', ()=>{
+  if(state.view==='interview'){
+    $('#interviewView').classList.remove('active');
+    enterReport();
+  } else {
+    $('#reportView').classList.add('active');
+  }
+});
+$('#resetBtn').addEventListener('click', ()=>{
+  if(confirm('Start a new session? This clears your current progress.')) resetAll();
+});
+$('#skipBtn').addEventListener('click', ()=>{
+  const claim = state.claims[state.currentIndex];
+  if(!claim) return;
+  claim.status = claim.score>=60 ? 'defended' : 'weak';
+  claim.recommendation = claim.recommendation || 'Revisit this claim with a concrete example: situation, your specific action, and a measurable result.';
+  claim.done = true;
+  state.currentIndex += 1;
+  save();
+  if(state.currentIndex < state.claims.length){
+    $('#transcript').innerHTML='';
+    loadClaimTurn(true);
+  } else {
+    enterReport();
+  }
+});
+
+/* ============================= INIT ============================= */
+function init(){
+  const existing = load();
+  if(existing && existing.claims && existing.claims.length){
+    state = existing;
+    $('#landingView').style.display='none';
+    $('#topbarRight').style.display='flex';
+    if(state.view==='report'){
+      $('#reportView').classList.add('active');
+      renderReport();
+    } else {
+      $('#interviewView').classList.add('active');
+      renderSidebar();
+      const claim = state.claims[state.currentIndex];
+      if(claim){
+        renderExhibitBanner(claim);
+        claim.turns.forEach(t=>{
+          appendMessage('interviewer', t.q, null, null);
+          appendMessage('user', t.a, t.feedback, null);
+        });
+        if(claim._pendingQuestion && claim.turns.length===0){
+          appendMessage('interviewer', claim._pendingQuestion);
+        }
+        if(!claim._pendingQuestion || claim.turns.length===0){
+          loadClaimTurn(claim.turns.length===0);
+        } else {
+          $('#answerInput').disabled=false; $('#sendBtn').disabled=false;
+        }
+      } else {
+        enterReport();
+      }
+    }
+  } else {
+    initLanding();
+  }
+}
+init();
+
+})();
+</script>
+</body>
+</html>
